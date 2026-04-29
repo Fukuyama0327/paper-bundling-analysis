@@ -28,4 +28,4 @@ data/interim/
 # Local settings
 .env
 .claude/settings.local.json
-
+.obsidian/
