@@ -1,0 +1,31 @@
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and generated artifacts
+cache/
+outputs/**
+!outputs/README.md
+data/raw/
+data/external/
+data/interim/
+
+# Office temporary files
+~$*
+*.tmp
+
+# Local settings
+.env
+.claude/settings.local.json
+

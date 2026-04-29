@@ -1,0 +1,31 @@
+[project]
+name = "paper-bundling-analysis"
+version = "0.1.0"
+description = "Analysis and writing workspace for infrastructure maintenance bundling research."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+geo = [
+    "geopandas",
+    "shapely",
+    "folium",
+]
+optimization = [
+    "gurobipy",
+]
+dev = [
+    "pytest",
+    "ruff",
+    "jupyter",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
