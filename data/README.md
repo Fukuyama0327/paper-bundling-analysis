@@ -13,6 +13,11 @@
 現時点の管理対象:
 - `expected_contracts_comparison_l5.csv`: \(L=5\) のシミュレーション値と閉形式解析解の比較。
 - `expected_contracts_comparison_summary.csv`: \(L=1,3,5,7,10\) の比較誤差サマリー。
+- `optimization_results_closed_form_20251207_200558.csv`: 閉形式目的関数による地域分割最適化結果。
+- `optimization_results_supply_series_20251207_163046.csv`: 供給制約等を含む可能性がある差分調査用の最適化結果。
+
+`optimization_results_closed_form_20251207_200558.csv` はGurobi最適化時のPWL近似値を含む。得られた地域分割を厳密な閉形式値で再評価する場合は `scripts/reevaluate_optimization_objectives.py` を使う。
 
 出典:
-`20251126_中里さんから受領/output/`
+- `20251126_中里さんから受領/output/`
+- `20251208_定期打ち合わせ/results/main/`
