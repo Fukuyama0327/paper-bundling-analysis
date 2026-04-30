@@ -72,6 +72,7 @@
 
 作業メモ:
 - 図表候補と採用方針は `paper/results_plan.md` に整理する。
+- 本文下書きは `paper/results.md` に整理する。
 
 ### 5. 考察
 
