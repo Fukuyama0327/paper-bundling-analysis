@@ -163,14 +163,15 @@ An Integrated Districting and Contract Bundling Model for Efficient Regional Bri
 出典:
 - 正本docxの図2
 - 中間審査資料では `f(N)=1.594N/(128.7+N), R^2=0.997`
+- 後続更新では `20251126_中里さんから受領` の閉形式関数とシミュレーション比較を使用
 
 用途:
 - Results の中核図。
 
 要確認:
-- 同時発注上限 L/I の設定。
-- シミュレーション条件。
-- 元データとコード。
+- Word時点の図2をそのまま使うか、閉形式とシミュレーションの比較図に差し替えるか。
+- 閉形式を本採用する場合、`simulation_vs_formula_comparison` を図2候補にする。
+- \(L=5\) だけを示すか、\(L=1,3,5,7,10\) の比較を示すか。
 
 ### Figure 3: 地域分割最適化結果
 
@@ -218,8 +219,8 @@ An Integrated Districting and Contract Bundling Model for Efficient Regional Bri
 
 優先度高:
 - 正本docxのMIP定式化を数式として復元する。
-- 正本docxのマルコフ推移確率行列を復元する。
-- 図2の期待契約件数関数の元データとコードを特定する。
+- 正本docx・後続更新のマルコフ推移確率行列の扱いを確定する。
+- 図2を、シミュレーションフィット図から閉形式比較図へ更新するか判断する。
 - 図3の目的関数比較図の元CSVとコードを特定する。
 - `20251122` 側の結果と `20251208` 側の結果の差を説明できるようにする。
 
@@ -231,4 +232,3 @@ An Integrated Districting and Contract Bundling Model for Efficient Regional Bri
 優先度低:
 - 投稿先候補に合わせたフォーマット調整。
 - 英語論文化する場合の表現調整。
-
