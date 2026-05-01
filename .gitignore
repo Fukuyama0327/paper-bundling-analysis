@@ -29,3 +29,7 @@ data/interim/
 .env
 .claude/settings.local.json
 .obsidian/
+
+# Local license files
+gurobi.lic
+.gurobi/
