@@ -95,6 +95,7 @@ An Integrated Districting and Contract Bundling Model for Efficient Regional Bri
 
 要作業:
 - 正本docxの数式を復元して、LaTeX形式で整理する。
+- 目的関数の設計判断は `paper/objective_design.md` に整理し、なぜ契約件数を目的関数、距離を制約として扱うかを本文に反映する。
 
 ### 4. Case Study
 

@@ -49,6 +49,7 @@
 
 作業下書き:
 - `paper/methodology.md`
+- 目的関数の設計判断は `paper/objective_design.md`
 
 構成候補:
 - 対象橋梁データ
