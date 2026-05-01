@@ -16,10 +16,14 @@
 - `optimization_results_closed_form_20251207_200558.csv`: 閉形式目的関数による地域分割最適化結果。
 - `optimization_results_supply_series_20251207_163046.csv`: 供給制約等を含む可能性がある差分調査用の最適化結果。
 - `distance_matrix_322_20251208.pkl`: 別PCでGurobi再実行を行うための対象322橋梁の距離行列。
+- `gurobi_validation_all_integer.csv`: 代表ケースを全整数PWLで再実行した検証結果。
+- `gurobi_validation_20_nodes.csv`: 代表ケースを20点PWLで再実行した比較結果。
 
 `optimization_results_closed_form_20251207_200558.csv` はGurobi最適化時のPWL近似値を含む。得られた地域分割を厳密な閉形式値で再評価する場合は `scripts/reevaluate_optimization_objectives.py` を使う。
 
 `distance_matrix_322_20251208.pkl` は `scripts/run_gurobi_districting.py` の入力である。元の巨大データやNotebookを別PCへ持ち込まず、代表ケースのPWL検証を再実行するために管理する。
+
+代表ケースの比較では、20点PWLと全整数PWLで \(D=35\) km, \(M=3\) の解が異なった。本文主結果は全整数PWLに寄せる。
 
 出典:
 - `20251126_中里さんから受領/output/`
