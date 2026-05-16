@@ -19,6 +19,9 @@ geo = [
 optimization = [
     "gurobipy",
 ]
+docs = [
+    "pypdf",
+]
 dev = [
     "pytest",
     "ruff",
@@ -28,4 +31,3 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-
