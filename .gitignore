@@ -21,6 +21,9 @@ data/raw/
 data/external/
 data/interim/
 
+# Reference PDFs are managed locally; keep metadata and notes in Git instead.
+references/pdf/*.pdf
+
 # Office temporary files
 ~$*
 *.tmp

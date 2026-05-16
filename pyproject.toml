@@ -20,6 +20,7 @@ optimization = [
     "gurobipy",
 ]
 docs = [
+    "cryptography",
     "pypdf",
 ]
 dev = [
