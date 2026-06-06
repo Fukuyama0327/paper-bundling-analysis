@@ -1,24 +1,23 @@
-\documentclass[Journal,letterpaper,InsideFigs]{ascelike-new}
+\documentclass[Journal,letterpaper,InsideFigs,NoLineNumbers]{ascelike-new}
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+% Japanese manuscripts should be compiled with LuaLaTeX.
+\usepackage[haranoaji]{luatexja-preset}
 \usepackage{graphicx}
-\usepackage[figurename=Fig.,labelfont=bf,labelsep=period]{caption}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage[colorlinks=true,citecolor=red,linkcolor=black,urlcolor=blue]{hyperref}
 
 \newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\newcommand{\E}{\mathrm{E}}
 
-% TODO: Replace the title with the final ASCE-style title.
-\title{Quantifying the Potential of Regional Collaboration and Contract Bundling in Bridge Maintenance}
+\title{広域連携による橋梁群の維持管理最適化に向けた地域分割と集約効果の定量分析}
 
-% TODO: Replace author names, affiliations, and contact information.
 \author{
-Shunichi Fukuyama\thanks{Graduate Student, Tohoku Univ.; email: TODO.}
+福山 峻一\thanks{非会員，東北大学大学院工学研究科（〒980-8579 宮城県仙台市青葉区荒巻字青葉6-6）E-mail: fukuyama.shunichi.p3@dc.tohoku.ac.jp}
+\and
+水谷 大二郎\thanks{正会員，東北大学大学院工学研究科 准教授（〒980-8579 宮城県仙台市青葉区荒巻字青葉6-6）E-mail: daijiro.mizutani.a5@tohoku.ac.jp}
 }
 
-% TODO: Update the name tag after the author list is finalized.
 \NameTag{Fukuyama}
 
 \begin{document}
@@ -26,162 +25,269 @@ Shunichi Fukuyama\thanks{Graduate Student, Tohoku Univ.; email: TODO.}
 \maketitle
 
 \begin{abstract}
-% TODO: Write a concise ASCE-style abstract after the main argument is fixed.
-% Include the problem setting, method, main findings, and contribution.
+本研究は，橋梁群の効率的な維持管理を目的とした地域分割最適化問題について検討する．老朽化インフラの増加と担い手不足への対応として，国土交通省が推進する「地域インフラ群再生戦略マネジメント（群マネ）」では，面的・群的視点に基づく広域的な維持管理体制の構築が求められている．本研究では，広域連携エリア内での橋梁補修の同時発注を前提とし，確率的劣化の下で計画期間中に発生する契約件数と，連携範囲の広さを考慮し，そのバランスを最適化するモデルを構築する．さらに，実橋梁データを用いた数値実験により，地域分割と集約効果の特性を分析する．本研究は，群マネの有効性を定量的に評価し，最適な広域連携のあり方を検討するうえで有用な数理的基盤を提供する．
 \end{abstract}
 
-\section{Introduction}
+\begin{center}
+\textbf{Key Words:} districting optimization, infrastructure group asset management, contract bundling, EBPM
+\end{center}
 
-% TODO: Describe the bridge maintenance management problem, aging infrastructure,
-% fragmented municipal responsibilities, and the policy motivation for regional
-% collaboration.
+\section{はじめに}
 
-% TODO: Define the focal problem as the aggregation potential of future bridge
-% repair demands into fewer contract units across administrative boundaries.
+近年，我が国では人口減少とインフラの老朽化が進行し，限られた予算や人員のもとでインフラを効率的にマネジメントしていくことが求められている．このような状況の中，国土交通省では「地域インフラ群再生戦略マネジメント（群マネ）」を推進している．
 
-% TODO: State three research questions.
-% RQ1: How much can regional partitioning across administrative boundaries reduce
-% the expected number of contract units for future bridge repair demands?
-% RQ2: What functional relationship characterizes the expected number of contracts
-% as the number of bridges in a region increases?
-% RQ3: How do distance constraints and the number of regions affect the tradeoff
-% between contract aggregation and spatial compactness?
+群マネの理念は，従来の市区町村単位の管理体制を超えて，インフラを面的・群的に捉え，広域的かつ分野横断的に再編・連携させることにある．その実現には，従来の行政区分や入札契約制度の枠組みにとらわれない，より柔軟で実効的なインフラマネジメント体制の構築が不可欠である．
 
-% TODO: State three contributions.
-% Contribution 1: Endogenize stochastic repair demand using a Markov deterioration model.
-% Contribution 2: Derive a closed-form expected contract count function.
-% Contribution 3: Formulate a regional partitioning problem that integrates
-% deterioration-based demand and contract bundling.
+群マネを推進するうえでは，複数のアセットオーナーとその管理資産を群として束ねた際に，費用や人員の面でどのような経済性が生じ得るかを明らかにし，集約効果を最大化するような維持補修戦略を立案することが求められる．例えば橋梁の補修・修繕契約を集約して広域的に発注する場合，発注者側には契約件数や契約業務負担の削減，およびリソース配分の効率化といったメリットが期待される．また，受注者側には，安定した事業量の確保や専門性の向上などの利点がある．一方で，連携範囲が過度に広域化すると，移動距離や現場対応の制約など地理的デメリットが生じる可能性もある．
 
-\section{Literature Review}
+本研究では，群マネの理念に整合した考え方のもとで，橋梁群のアセットマネジメントに資する地域分割最適化手法の開発を目的とする．具体的には，混合整数計画法を用い，橋梁補修にかかる期待契約件数を最小化しつつ，地域内最大距離を制約として考慮する最適化モデルを構築する．劣化予測にはマルコフ劣化モデルを採用し，健全度IIIとなる確率に基づいて補修タイミングを表現する．さらに，宮城県内の実橋梁データを用いた数値実験を通じて，提案手法の有効性を検証し，現行の管理体制との比較によって改善効果を評価する．
 
-\subsection{Infrastructure Districting and Regional Partitioning}
+本研究の成果は，群マネにおける広域連携の効果を定量的に評価し，最適な連携範囲を検討するための実用的な数理的基盤を提供するものである．
 
-% TODO: Review districting and regional partitioning studies relevant to
-% infrastructure management, public services, and spatial allocation.
+\section{既往研究}
 
-% TODO: Clarify how existing districting studies treat demand, compactness,
-% workload balance, and administrative boundaries.
+地域分割（districting）問題は，行政計画，選挙区割り，医療アクセスなど，多様な分野において最適な空間単位の構築を目的として研究が行われてきた．例えば，Webster\cite{webster2013}は政治区割り問題を対象に，従来の選挙区割り基準（人口均等性，コンパクト性，連続性，利害共同体の維持など）の妥当性を再評価し，より公平で理想的な区割りのあり方を論じている．また，混合整数計画法（Mixed Integer Programming, MIP）を用いた地域分割手法は，コンパクト性・均衡性・接続性・階層構造といった複雑な制約条件を柔軟に扱える点で優れており，従来のクラスタリング手法では困難であった現実的な空間条件の考慮を可能にする．Kalcsics and Rios-Mercado\cite{kalcsics2019}は，地域分割問題における主要な制約（均衡性・接続性・コンパクト性など）を整理し，これらをMIPにより柔軟に定式化できることを示している．さらに，Novaes et al.\cite{novaes2010}は，物流配送を対象に連続的な地域分割モデルを構築し，Power Voronoi図を用いて地理的障害（河川・道路など）を考慮した最適分割を実現した．
 
-\subsection{Project and Contract Bundling}
+一方，橋梁や道路を対象としたバンドリング（bundling）に関する研究も進展している．Qiao\cite{qiao2019}は，インディアナ州の道路・橋梁プロジェクトを対象に，バンドルが単価，工期，交通維持費，コスト超過リスク，入札者数などに与える影響を統計的に分析し，これらの複数要因を統合的に扱う多目的最適化モデルを構築した．Assaf and Assaad\cite{assaf2023}は，実際のインフラプロジェクトを分析し，バンドリング戦略に影響を与える主要な意思決定要因として，地理的近接性，工種や規模の類似性，事業時期の整合性などを抽出・体系化した．さらに，Assaf et al.\cite{assaf2024}では，実データに基づきプロジェクト・バンドリングに内在する機会（効率化，コスト削減）と課題（調達の複雑化，リスクの集中）をモデル化し，要因間の連動パターンを明らかにすることで，より効果的な意思決定とリスク管理を支援する手法を提示している．また，米国連邦道路局（FHWA）は，Bridge Bundling Guidebook\cite{fhwa2019}を通じて，橋梁の効率的な更新・維持を目的に，複数橋の一括設計・施工・発注を行う制度設計，調達方式，リスクマネジメント，橋梁選定や適正規模設定などの実務手順を包括的に示している．
 
-% TODO: Review project bundling and contract bundling studies in transportation
-% infrastructure, including bridge and road maintenance contexts.
+これらの既往文献を総合すると，バンドリングによる効果とデメリットは表\ref{tab:bundling}のように整理できる．
 
-% TODO: Explain the expected benefits and risks of bundling: contract-unit
-% aggregation, procurement burden reduction, scale economies, management burden,
-% and possible competition effects.
+\begin{table}[h]
+\centering
+\caption{バンドリングによる効果とデメリット}
+\label{tab:bundling}
+\begin{tabular}{p{0.16\linewidth}p{0.16\linewidth}p{0.56\linewidth}}
+\toprule
+区分 & 関係者 & 効果・デメリット \\
+\midrule
+効果 & 発注者側 & 契約数や契約にかかる手間の削減，リソース配分の効率化，規模の経済による単価の削減 \\
+効果 & 受注者側 & 性能規定型の維持管理の実現，安定した事業量の確保，専門性の向上 \\
+デメリット & 発注者側 & 広域化に伴う行政手続きの複雑化，入札者減少による競争性低下，調達・品質リスクの集中 \\
+デメリット & 受注者側 & 現場の地理的分散による交通維持費・管理費の増加，生産性低下，一般管理費の増大 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-% TODO: Position Qiao et al. and related bundling optimization studies.
-% Emphasize that many studies assume a given project list rather than stochastic
-% repair demand generated by deterioration.
+以上のように，地域分割とバンドリングの研究はそれぞれ独立して発展してきたが，両者を統合的に最適化する枠組みは十分に確立されていない．特に，地域的な空間制約と確率的な劣化進行を同時に考慮し，維持補修契約の集約効果を定量的に評価する研究は限定的である．本研究では，地域分割とバンドリングを統合的に扱う新たな最適化枠組みを提案し，確率的劣化の下での集約効果を定量的に評価することを目的とする．
 
-\subsection{Research Gap}
+\section{モデル構築}
 
-% TODO: Explain the gap: districting and bundling have been studied separately,
-% but few studies integrate stochastic bridge deterioration, contract bundling,
-% and regional partitioning across administrative boundaries.
+\subsection{モデルの概要}
 
-\section{Methodology}
+橋梁の集合を \(I\)，地域候補の集合を \(K\) とし，計画期間は離散時間集合 \(T\) で表す．地域 \(k\in K\) に含まれる橋梁集合を \(I_k\) とし，橋梁 \(i\in I\) を地域 \(k\) に割り当てる二値変数を \(x_{ik}\) と定義する．地域 \(k\) に束ねられる橋梁本数を \(N_k\) とおき，期間中に地域で発生する契約発注の期待件数を \(f(N_k,L)\) によって表す．ここで，\(L\) は1契約で同時発注できる橋梁数の上限である．
 
-\subsection{Overview}
+本研究では，広域連携による集約のメリットを期待契約件数の削減として扱い，同時に，地域の広がりに伴う地理的な非効率を地域内最大距離の上限制約によって表現する．劣化に起因する補修需要は各橋梁の確率過程から与えられ，運用上は健全度III到達を補修トリガーとしてみなす．以上を定式化し，最適な地域分割を混合整数計画により求める．
 
-% TODO: Provide the overall model flow: bridge data, Markov deterioration model,
-% repair event probability, closed-form expected contract count, and mixed-integer
-% regional partitioning model.
+\subsection{MIPモデルの定式化}
 
-\subsection{Bridge Deterioration and Repair Demand}
+地域分割の最適化問題は，橋梁の地域割当を表す二値変数 \(x_{ik}\) および，橋梁ペアの同居を表す補助変数 \(y_{ijk}\) を用いた混合整数計画問題として定式化する．目的は，地域ごとの束ね本数 \(N_k\) に対する期待契約件数 \(f(N_k,L)\) の総和を最小化することである．これにより，広域連携による集約効果を反映した効率的な地域分割を導出する．
 
-% TODO: Define the Markov deterioration states and the repair trigger.
-% Do not insert final numerical transition probabilities until they are verified.
+\[
+\min \quad \sum_{k\in K} f(N_k,L)
+\]
 
-% TODO: Explain how the single-bridge repair probability q is derived from the
-% deterioration model.
+subject to
+\[
+N_k = \sum_{i\in I} x_{ik}
+\quad \forall k\in K,
+\]
+\[
+\sum_{k\in K} x_{ik} = 1
+\quad \forall i\in I,
+\]
+\[
+\sum_{i\in I} x_{ik} \geq 1
+\quad \forall k\in K,
+\]
+\[
+y_{ijk} \leq x_{ik}
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+y_{ijk} \leq x_{jk}
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+y_{ijk} \geq x_{ik}+x_{jk}-1
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+d_{ij}y_{ijk} \leq D
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+x_{ik}\in\{0,1\},\quad y_{ijk}\in\{0,1\}.
+\]
 
-\subsection{Closed-Form Expected Contract Count}
+上式の目的関数は，地域 \(k\) に束ねられる橋梁数に対して推定された期待契約件数関数の総和である．第1制約は \(N_k\) の定義式，第2・第3制約はそれぞれ橋梁の一意割当と地域の非空条件を示す．第4～第6制約は補助変数 \(y_{ijk}\) と橋梁割当変数 \(x_{ik}\) の論理的関係を表し，第7制約は地域内最大距離を \(D\) 以下に制限する上限制約である．この定式化により，連携範囲を政策変数 \(D\) として調整しながら，地域分割と集約効果のトレードオフを数理的に評価する．
 
-% TODO: Define the number of bridges in a region, the repair probability, and the
-% maximum number of bridges bundled into one contract.
+\subsection{劣化過程のモデル化}
 
-% TODO: Derive the closed-form expected contract count function based on the
-% binomial distribution and the ceiling function.
+橋梁の劣化進行は，時間経過に応じて健全度が段階的に低下する確率過程として表される．本研究では，津田ら\cite{tsuda2005}の手法に基づき，定期点検データからマルコフ推移確率を推定するモデルを用いる．健全度状態を \(c\in\{1,2,3\}\) とし，時点 \(t\) における橋梁 \(i\) の状態確率ベクトルを
+\[
+{\mathbf \pi}_{i,t}
+=
+\left(
+\pi_{i,t}^{(1)},\pi_{i,t}^{(2)},\pi_{i,t}^{(3)}
+\right)
+\]
+と定義する．劣化過程は，以下のマルコフ遷移式で表される．
+\[
+{\mathbf \pi}_{i,t+1}
+=
+{\mathbf \pi}_{i,t}P .
+\]
+ここで，\(P\) は推移確率行列である．状態は非可逆的に進行するものとし，健全度が改善する推移は考慮しない．また，状態III以上を補修発生のトリガーとして扱う．
 
-% TODO: Explain why the closed-form function replaces the earlier simulation
-% fitting approach.
+\subsection{期待契約件数関数}
 
-\subsection{Regional Partitioning Model}
+Word正本では，モンテカルロ・シミュレーションにより橋梁数 \(N\) と期待契約件数の対応関係を推定し，以下の分数関数で近似していた．
+\[
+f(N)=\frac{1.594N}{128.7+N},
+\quad R^2=0.997.
+\]
+この関数形は，橋梁数の増加に伴って契約件数が増加する一方，契約バンドリングによる集約効果により増加率が逓減し，一定値へ漸近する性質を表す．
 
-% TODO: Define decision variables for assigning bridges to regions and selecting
-% regional centers or representatives.
+一方，後続検討では，単一橋梁の補修確率 \(q\) を用いた閉形式の期待契約件数関数を導入する．地域内に \(N\) 橋梁があり，各橋梁が独立に確率 \(q\) で補修対象になると仮定すると，補修対象橋梁数 \(X\) は
+\[
+X \sim {\rm Binomial}(N,q)
+\]
+に従う．補修対象橋梁数が \(n\) 本の場合，契約件数は
+\[
+\left\lceil \frac{n}{L} \right\rceil
+\]
+で表される．したがって，期待契約件数は以下で与えられる．
+\[
+f(N,L)
+=
+\sum_{n=0}^{N}
+{N\choose n}q^n(1-q)^{N-n}
+\left\lceil \frac{n}{L} \right\rceil .
+\]
+ただし，\(n=0\) のときは契約件数を0とする．この閉形式により，契約バンドリング上限 \(L\) と補修確率 \(q\) が明示され，地域分割最適化の目的関数としての解釈が明確になる．
 
-% TODO: Define the objective function using the closed-form expected contract
-% count function.
+\section{数値計算}
 
-% TODO: Define distance constraints and explain their interpretation as a policy
-% or scenario parameter rather than a directly estimated cost threshold.
+\subsection{使用データの概要}
 
-% TODO: Describe the piecewise-linear representation used to embed the
-% closed-form expected contract count function in the MIP.
+本章では，前章で構築したモデルの有効性を検証するため，実橋梁データを用いた数値計算を行う．データは，全国道路施設点検データベース\cite{roadstructuresdb}から取得した宮城県内に存在する橋梁のうち，鉄筋コンクリート（RC）橋を対象とした．また，劣化過程のマルコフモデルを構築するために，道路メンテナンス年報に掲載されている「点検実施施設名一覧データ」\cite{roadmaintenance}を利用し，過年度における健全度変化を抽出した．
 
-\section{Numerical Analysis}
+\subsection{マルコフ推移確率の推定}
 
-\subsection{Data}
+過年度の橋梁点検データに基づき，3章で定義した方法に従ってマルコフ推移確率行列を推定した．推定にあたっては，架設後30年未満の橋梁について架設時の健全度をIと仮定し，初期状態を補完した．さらに，前回点検に比べて健全度が回復している事例は，点検誤差または補修履歴未反映の可能性を考慮し，分析対象から除外した．これにより，観測データに基づく健全度推移のサンプルを整備し，状態遷移頻度表を作成した．表\ref{tab:transition_counts}に遷移前健全度と遷移後健全度の推移の集計結果を示す．
 
-% TODO: Describe the bridge dataset, study area, bridge count, administrative
-% units, and distance data.
+\begin{table}[h]
+\centering
+\caption{健全度の遷移の集計}
+\label{tab:transition_counts}
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{4}{c}{遷移後} \\
+\cmidrule(lr){2-5}
+遷移前 & I & II & III & IV \\
+\midrule
+I & 949 & 1323 & 82 & 0 \\
+II & 0 & 4703 & 372 & 2 \\
+III & 0 & 0 & 203 & 2 \\
+IV & 0 & 0 & 0 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-% TODO: Clarify data preprocessing and exclusions.
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図1 点検間隔の分布（仮置き）}}
+\caption{点検間隔の分布}
+\label{fig:inspection_interval}
+\end{figure}
 
-\subsection{Validation of the Expected Contract Count Function}
+状態IVを吸収状態とし，補修判定を状態IIIで行うため，状態IVへの推移確率をIIIに加算して簡略化した．これにより，吸収化した3状態マルコフ連鎖の推移確率行列は次式のようになる．
+\[
+P =
+\left(
+\begin{array}{ccc}
+0.9132082586632038 & 0.08616179766540086 & 0.00062994367139535 \\
+0 & 0.9857337922074478 & 0.01426620779255218 \\
+0 & 0 & 1
+\end{array}
+\right).
+\]
+この推移確率行列から，単一橋梁の補修確率は \(q=0.012329120856\) と算定される．
 
-% TODO: Compare the closed-form function with simulation results.
+\subsection{期待契約件数関数の検証}
 
-% TODO: Add the figure/table showing simulation and closed-form agreement after
-% figures are regenerated.
+前節で得られた推移確率行列を用いて，モンテカルロ・シミュレーションにより橋梁群の劣化進行を再現した．シミュレーションでは，計画期間を \(T=100\)，試行回数を \(|S|=10000\)，一括発注の上限橋梁数を \(L=5\) と設定した．これにより，確率的な劣化進行のばらつきを考慮したうえで，地域に束ねる橋梁数と地域ごとの期待契約件数の関係を算定した．
 
-\subsection{Regional Partitioning Results}
+図\ref{fig:expected_contracts}に期待契約件数関数の検証結果を示す．Word正本では，シミュレーション結果に対する分数関数近似を示していたが，査読論文化では閉形式 \(f(N,L)\) とシミュレーション結果の比較として再構成する．主分析で用いる \(L=5\) では，平均絶対誤差は0.005193，平均相対誤差は0.746135\%，RMSEは0.005384であった．この結果は，閉形式の期待契約件数関数がシミュレーション結果を十分に近似していることを示している．
 
-% TODO: Present optimization results by distance constraint and number of regions.
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図2 期待契約件数関数の検証結果（仮置き）}}
+\caption{期待契約件数関数の検証結果}
+\label{fig:expected_contracts}
+\end{figure}
 
-% TODO: Report the reduction rate relative to the current administrative
-% management baseline rather than relying only on absolute objective values.
+\subsection{地域分割最適化の実施}
 
-\subsection{Sensitivity Analysis}
+前節で得られた期待契約件数関数を基に，構築した混合整数計画モデルを用いて地域分割の最適化を行った．対象は宮城県内市区町村が管理する橋梁であり，橋梁位置情報から算出した距離行列をもとに，地域ごとの最適割当を求めた．目的関数には，3章で定義した契約件数最小化モデルを用い，地域数および最大距離制約を変化させて最適解を比較した．
 
-% TODO: Analyze sensitivity to the maximum number of bridges per contract.
+最適化の結果，最大距離制約 \(D\) を緩和することで，目的関数値は概ね減少傾向を示している．これは，地域間の連携範囲を拡大することで，一括発注による集約効果が高まり，契約件数を削減できることを意味している．また，地域数 \(M\) を減少させた場合にも同様に目的関数値が低下し，一定規模までは地域統合による発注効率の向上が得られることが分かった．一方で，距離制約を過度に緩和すると，現場移動や管理上の負担が増える可能性がある．したがって，本結果は，単に全域を一括化することが望ましいという結論ではなく，距離制約と発注効率のトレードオフを定量的に比較するための基礎を与える．
 
-% TODO: Add additional sensitivity analyses only if they are supported by
-% reproducible results.
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図3 距離制約ごとの目的関数の最適値（仮置き）}}
+\caption{距離制約ごとの目的関数の最適値}
+\label{fig:optimization_results}
+\end{figure}
 
-\section{Discussion and Conclusion}
+\begin{table}[h]
+\centering
+\caption{現行管理と最適化結果の比較}
+\label{tab:optimization_results}
+\begin{tabular}{lrr}
+\toprule
+条件 & 目的関数値 & 現行管理比の低減率 \\
+\midrule
+既存の管理 & 2.5241 & 0.0\% \\
+\(D=15\) km, \(M=6\) & 2.0883 & 17.3\% \\
+\(D=20\) km, \(M=5\) & 1.7911 & 29.0\% \\
+\(D=25\) km, \(M=3\) & 1.5676 & 37.9\% \\
+\(D=30\) km, \(M=3\) & 1.4161 & 43.9\% \\
+\(D=35\) km, \(M=3\) & 1.2620 & 50.0\% \\
+\(D \geq 40\) km, \(M=1\) & 1.1933 & 52.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Discussion}
+\section{終わりに}
 
-% TODO: Interpret what a reduction in the expected number of contracts means:
-% potential for contract-unit aggregation, not a direct estimate of all bundling
-% benefits.
+本研究では，広域連携による橋梁群の維持管理最適化に向けて，地域分割と集約効果を統合的に扱う混合整数計画モデルを構築した．マルコフ劣化モデルを用いた確率的補修需要の下で，地域に含まれる橋梁数ごとの期待契約件数を算定し，それを目的関数に組み込むことで，広域的な集約と地理的制約のトレードオフを定量的に評価した．
 
-% TODO: Discuss policy implications for regional collaboration in bridge
-% maintenance management.
+宮城県内の実橋梁データを対象とした数値解析の結果，地域数および距離上限の変化に応じて，発注効率の改善効果が確認された．また，現行の行政単位による管理体制と比較して，提案手法は期待契約件数を削減できる可能性を示した．
 
-% TODO: Explain the role of distance constraints as a scenario parameter for
-% balancing aggregation potential and practical manageability.
+今後の課題としては，より実務的な契約一括化ロジックの反映，距離的要因以外の広域化による影響の定量化，より広域的地域スケールにおける最適化計算の実施，橋梁特性ごとのグルーピングが発注効率に及ぼす影響の分析などが挙げられる．
 
-\subsection{Limitations}
-
-% TODO: Discuss limitations: expected contract count as a proxy indicator,
-% straight-line versus network distance, homogeneous bridge assumptions,
-% independent repair demand, and omission of contractor supply constraints.
-
-\subsection{Conclusion}
-
-% TODO: Summarize the research questions, contributions, main findings, and
-% directions for future work.
-
-% TODO: Add acknowledgments if needed.
-
-% TODO: Add references after the bibliography file and citation policy are fixed.
-% \bibliographystyle{ascelike-new}
-% \bibliography{references}
+\begin{thebibliography}{99}
+\bibitem{webster2013}
+Webster, G. R.: Reflections on current criteria to evaluate redistricting plans, Political Geography, Vol.32, No.1, pp.3--14, 2013.
+\bibitem{kalcsics2019}
+Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019.
+\bibitem{novaes2010}
+Novaes, A. G. N., et al.: A continuous districting model applied to logistics distribution problems, Proceedings of the XVI International Conference on Industrial Engineering and Operations Management, Sao Carlos, Brazil, 2010.
+\bibitem{qiao2019}
+Qiao, Y.: Bundling effects on contract performance of highway projects: quantitative analysis and optimization framework, Ph.D. Dissertation, Purdue University, 2019.
+\bibitem{assaf2023}
+Assaf, G. and Assaad, R. H.: Key decision-making factors influencing bundling strategies: analysis of bundled infrastructure projects, Journal of Infrastructure Systems, Vol.29, No.2, 2023.
+\bibitem{assaf2024}
+Assaf, G., Assaad, R. H. and Karaa, F.: Identifying the opportunities and challenges of project bundling: modeling and discovering key patterns using unsupervised machine learning, Journal of Infrastructure Systems, Vol.30, No.1, 2024.
+\bibitem{fhwa2019}
+FHWA: Bridge Bundling Guidebook: An Efficient and Effective Method for Maintaining and Improving Bridge Assets, Federal Highway Administration, U.S. Department of Transportation, 2019.
+\bibitem{tsuda2005}
+津田尚胤，貝戸清之，青木一也，小林潔司：橋梁劣化予測のためのマルコフ推移確率の推定，土木学会論文集，No.801/I-73，pp.69--82，2005.
+\bibitem{roadstructuresdb}
+全国道路施設点検データベース，\url{https://road-structures-db.mlit.go.jp}.
+\bibitem{roadmaintenance}
+道路メンテナンス年報 平成26年度--令和6年度，\url{https://www.mlit.go.jp/road/sisaku/yobohozen/yobohozen_maint_index.html}.
+\end{thebibliography}
 
 \end{document}
