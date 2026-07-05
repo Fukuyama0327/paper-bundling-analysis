@@ -23,10 +23,24 @@ data/interim/
 
 # Reference PDFs are managed locally; keep metadata and notes in Git instead.
 references/pdf/*.pdf
+references/pdf/**/*.pdf
 
 # Office temporary files
 ~$*
 *.tmp
+
+# LaTeX build artifacts (regenerate via lualatex/latexmk; source .tex/.sty/.cls are tracked)
+# main.pdf is excluded too since it's regenerable from main.tex; `git add -f paper/latex/main.pdf`
+# if you'd rather keep a viewable copy on GitHub.
+paper/latex/*.aux
+paper/latex/*.log
+paper/latex/*.out
+paper/latex/*.synctex.gz
+paper/latex/*.toc
+paper/latex/*.bbl
+paper/latex/*.blg
+paper/latex/main.pdf
+paper/latex/.overleaf/
 
 # Local settings
 .env

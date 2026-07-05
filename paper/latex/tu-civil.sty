@@ -1,0 +1,945 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                    %
+%                    片面印刷用                                      %
+%                                                                    %
+% Modification of `article.sty', `report.sty', `latex.tex'           %
+%                                                   and `fleqn.sty'  %
+%   for Japan Society of Civil Engineers' Proceedings format         %
+%                                                                    %
+% Version 2.02 by Watanabe Masatoshi (watanabe@akiu.gw.tohoku.ac.jp) %
+%             and Iwakuma  Tetsuo   (bear@hashi1.civil.tohoku.ac.jp) %
+%                                                       <1 May 1993> %
+%                                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% `tu-civil.sty' for both japanese and english thesis and dissertation
+%   modification of suthesis.sty for Stanford University thesis style
+% 急ごしらえで fleqn.sty を除いた版 1998/1/29
+
+\typeout{
+Thesis style at C.E. Dept. <12 Feb 2016> M.Watanabe & T.Iwakuma [-27]3564.97}
+
+%[1] BASIC settings
+% LANGUAGE setting : default=japanese
+\newif\ifEN@LISH \EN@LISHfalse
+\@ifundefined{reset@font}{\let\reset@font\empty}{} % OFSS vs. NFSS
+\setlength{\topmargin}{-1cm}
+\setlength{\oddsidemargin}{1cm}
+\setlength{\evensidemargin}{1cm}
+\advance\topskip 5mm
+
+% LINE FEED setting for easy reading and thick volume
+\ifx\fakejchar\undefined
+\renewcommand{\baselinestretch}{1.68}
+\textheight = 40\baselineskip     % 24 lines/page (33=1.4*24)
+\else
+\renewcommand{\baselinestretch}{1.4}
+\textheight = 32\baselineskip     % 24 lines/page (33=1.4*24)
+\fi
+\advance\textheight by \topskip
+\setlength{\textwidth}{15.5cm}
+
+\def\dept#1{\def\@@dept{#1}}
+\def\univname#1{\def\@univname{#1}}
+
+% ENGLISH document
+\def\inenglish{\EN@LISHtrue
+% LINE FEED setting
+ \renewcommand{\baselinestretch}{1.6}
+ \textheight = 44\baselineskip % 44=28\baselinestretch; 28 lines/page
+  \advance\textheight by \topskip
+% INITIALIZATIONS
+% \def\@univname{tohoku university}
+ \def\@dept{\@@dept\\ and the committee on graduate studies}
+ \def\@submitdate{March \space \number\the\year}
+ \def\abstractname{ABSTRACT}
+ \def\acknowledgmentname{ACKNOWLEDGMENT}
+ \def\figurename{Fig.}
+ \def\tablename{Table}
+ \def\photoname{Photo}
+ \def\figuresname{Figs.}
+ \def\tablesname{Tables}
+ \def\photosname{Photos}
+ \def\fnum@photo{\photoname‾\thephoto}
+ \def\appendixname{APPENDIX}
+ \def\thesis@name{dissertation}
+ \def\advis@rname{Principal Advisor}
+ \def\contentsname{Contents}
+ \def\listfigurename{List of Figures}
+ \def\listtablename{List of Tables}
+ \def\listphotoname{List of Photos}
+ \def\theappendixchapter{\Alph{chapter}}
+% REFERENCES name
+ \def\bibname{REFERENCES}}
+
+% MASTER thesis
+\def\masterthesis{\ifEN@LISH%
+ \def\thesis@name{master thesis}
+ \def\degree@name{for the degree of\\ master of engineering}\else
+ \def\thesis@name{修\ 士\ 論\ 文}\fi}
+
+% GRADUATION thesis
+\def\graduationthesis{\graduationtrue
+ \ifEN@LISH%
+ \def\@dept{\@@dept}
+ \def\thesis@name{graduation thesis}\def\advis@rname{Advisor}
+ \def\degree@name{for the degree of\\ bachelor of engineering}\else
+ \def\@dept{\@@dept}
+ \def\thesis@name{卒\ 業\ 論\ 文}\def\advis@rname{指導教員}\fi}
+
+%[2] MAKETITLEPAGE related settings
+% \def\dept#1{\gdef\@dept{#1}}
+\def\principaladvisor#1{\gdef\@principaladvisor{#1}}
+\def\firstreader#1{\gdef\@firstreader{#1}}
+\def\secondreader#1{\gdef\@secondreader{#1}}
+\def\thirdreader#1{\gdef\@thirdreader{#1}}
+\def\fourthreader#1{\gdef\@fourthreader{#1}}
+\def\fifthreader#1{\gdef\@fifthreader{#1}}
+\def\sixthreader#1{\gdef\@sixthreader{#1}}
+\def\submitdate#1{\gdef\@submitdate{#1}}
+\long\def\abstract#1{\gdef\@abstract{#1}}             % allow \\
+\long\def\acknowledgment#1{\gdef\@acknowledgment{#1}} % allow \\
+\def\englishtitle#1{\gdef\@englishtitle{#1}}
+\def\englishauthor#1{\gdef\@englishauthor{#1}}
+
+\def\@submitdate{\number\the\year 年 \space 2月1日}
+\def\@abstract{}\def\@acknowledgment{}
+\def\@dept{\@@dept}
+% \def\@univname{東北大学}
+\def\thesis@name{博\ 士\ 論\ 文}
+\def\advis@rname{主　査}
+\def\degree@name{in partial fulfillment of the requirements\\
+ for the degree of\\ doctor of engineering}
+\def\abstractname{要　旨}
+\def\acknowledgmentname{謝　辞}
+\def\appendixname{補遺}
+\def\theappendixchapter{\Roman{chapter}}
+\def\contentsname{目　次}
+\def\listfigurename{図　目　次}
+\def\listtablename{表　目　次}
+\def\listphotoname{写　真　目　次}
+\def\figurename{図\mbox{}--}
+\def\tablename{表\mbox{}--}
+\def\photoname{写真\mbox{}--}
+\def\figuresname{図\mbox{}--}
+\def\tablesname{表\mbox{}--}
+\def\photosname{写真\mbox{}--}
+\def\bibname{参考文献}
+
+\newif\iffigurespage \newif\iftablespage \newif\ifgraduation
+\newif\ifphotospage
+\figurespagetrue \tablespagetrue \graduationfalse \photospagetrue
+
+% \maketitle from titlepage.sty 16 June 1991.
+\def\maketitle{\pagenumbering{roman}\pagestyle{plain}%
+\begin{titlepage}%
+ \let\footnotesize\small
+ \let\footnoterule\relax
+% \setcounter{page}{1}%
+ \null
+ \vfill
+ \ifEN@LISH\vskip 60\p@ \else\vskip 30\p@
+ \begin{center}{\large\thesis@name}\end{center} \vskip 20\p@ \fi
+\begin{center}
+ {\LARGE \@title \par} \vskip 3em
+ \ifEN@LISH\else\ifgraduation\else {\Large \@englishtitle \par} \vskip 3em \fi\fi
+ \vfill
+%
+ \ifEN@LISH%
+   \sc a \thesis@name\\ submitted to the department of 
+   \lowercase\expandafter{\@dept}\\
+   of \@univname\\ \degree@name
+  \else \vfill \@univname \@dept \fi
+%
+ \ifgraduation\vskip 3em{\large\advis@rname{}%
+  \ifEN@LISH ‾ \else 　 \fi \@principaladvisor}\fi
+%
+ \vfill
+ \ifEN@LISH{\large \lineskip .75em\@author\par}
+  \else{\Large \lineskip .75em\@author
+ \ifgraduation\else \par \large \lineskip .75em\@englishauthor \fi
+ \par}\fi
+ \vskip 1.5em {\large \@submitdate \par}
+\end{center} \par\vfill\null
+%
+\pagebreak% \pagenumbering{roman}\pagestyle{plain}
+% \setcounter{page}{2}
+\null%
+\ifgraduation\vskip .5em\else\vskip 2cm
+ \begin{center}
+  {\Large Copyright\ \copyright\ \number\the\year\ by\ \@englishauthor}\vfill
+ \end{center}
+ \signaturepage\null\pagebreak\null\vskip .5em\fi
+%
+\begin{center}
+\ifgraduation
+{\large\bf \uppercase{\abstractname}}\par\vskip 2em
+ {\Large \@title \par} \vskip 2em 
+  {\large \lineskip .75em\@author\par} \vskip 3em
+\else
+\ifEN@LISH
+{\large\bf \uppercase{\abstractname}}\par\vskip 2em
+ {\Large \uppercase\expandafter{\@title} \par} \vskip 2em 
+  {\large \lineskip .75em\@author\par} \vskip 3em
+\else
+{\large\bf \uppercase{Abstract}}\par\vskip 2em
+ {\large \@englishtitle \par} \vskip 2em 
+  {\normalsize \lineskip .75em\@englishauthor\par} \vskip 3em
+\fi
+\fi
+\end{center}
+\par{\ifgraduation\else
+ \parindent=1.5em\fi \@abstract}\par\null\pagebreak\null\vskip .5em
+%
+\begin{center}{\large\bf \uppercase{\acknowledgmentname}}\end{center}
+\par\vskip 2em\@acknowledgment\par
+%
+\tableofcontents
+%
+\iftablespage\listoftables\fi
+\iffigurespage\listoffigures\fi
+\ifphotospage\listofphotos\fi
+\end{titlepage}
+%
+\setcounter{footnote}{0}\let\thanks\relax\let\maketitle\relax
+\let\dept\relax\gdef\@dept{}
+\let\principaladvisor\relax\gdef\@principaladvisor{}
+\let\firstreader\relax\gdef\@firstreader{}
+\let\secondreader\relax\gdef\@secondreader{}
+\let\thirdreader\relax\gdef\@thirdreader{}
+\let\submitdate\relax\gdef\@submitdate{}
+\let\abstract\relax\gdef\@abstract{}
+\let\acknowledgment\relax\gdef\@acknowledgment{}
+\setcounter{page}{1}%
+\pagenumbering{arabic}\pagestyle{headings}\def\rightmark{\null}}
+
+\long\def\signature#1{%
+ \begin{center}\begin{minipage}{10cm}
+ \parindent=0pt\vspace{1.5cm}
+ \hbox to 10cm{\hfil\shortstack{\vrule width 7.5cm height 0.4pt\\#1}}
+ \end{minipage}\end{center}}
+
+\def\signaturepage{%
+ \@ifundefined{@principaladvisor}{}{%
+          \signature{\@principaladvisor\\(\advis@rname)}\vskip 1.5em}
+ \@ifundefined{@firstreader}{}{\signature\@firstreader\vskip 1.5em}
+ \@ifundefined{@secondreader}{}{\signature\@secondreader\vskip 1.5em}
+ \@ifundefined{@thirdreader}{}{\signature\@thirdreader\vskip 1.5em}
+ \@ifundefined{@fourthreader}{}{\signature\@fourthreader}\vskip 3em}
+
+%[3] CHAPTER, SECTION, SUBSECTION, SUBSUBSECTION and APPENDIX numbering
+%    modification of expression of section and subsection
+%
+%     1. {\LARGE\bf CHAPTER}  indentation is retrieved
+%      (1) {\Large\bf SECTION}
+%        a) {\large\bf SUBSECTION}
+%            {\bf SUBSUBSECTION}
+%     APPENDIX I or A. {\LARGE\bf CHAPTER} with equation-numbering
+%                     Eq.(I.1) ... or Eq.(A.1) ...
+%
+\def\@makechapterhead#1{%
+ \vspace*{50\p@}%
+ {\parindent \z@ \raggedright
+   \ifnum \c@secnumdepth >\m@ne
+     \LARGE\bf \@chapapp{\thechapter} \fi
+   \LARGE \bf #1\par \nobreak \vskip 40\p@
+ }}
+ 
+\def\@makeschapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright
+    \LARGE \bf #1\par \nobreak \vskip 40\p@
+  }}
+ 
+\def\@chapapp#1{#1 .\ \ }
+ 
+\def\addcontents@message{\protect\numberline{\thechapter}}
+ 
+\def\chapter{\clearpage
+   \thispagestyle{plain}%
+   \global\@topnum\z@
+   \@afterindentfalse
+   \secdef\@chapter\@schapter}
+ 
+\def\@chapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+ \refstepcounter{chapter}%
+ \typeout{\@chapapp\space\thechapter.}%
+ \addcontentsline{toc}{chapter}{\addcontents@message #1}\else
+ \addcontentsline{toc}{chapter}{#1}\fi
+ \chaptermark{#1}%
+ \addtocontents{lof}{\protect\addvspace{10\p@}}
+ \addtocontents{lop}{\protect\addvspace{10\p@}}
+\addtocontents{lot}{\protect\addvspace{10\p@}} \if@twocolumn
+\@topnewpage[\@makechapterhead{#2}]%
+ \else \@makechapterhead{#2}%
+ \@afterheading \fi}
+ 
+\def\@schapter#1{\if@twocolumn \@topnewpage[\@makeschapterhead{#1}]%
+ \else \@makeschapterhead{#1}%
+ \@afterheading\fi}
+ 
+\def\section{\@startsection {section}{1}{\z@}{3.5ex plus
+ 1ex minus.2ex}{2.3ex plus.2ex}{\reset@font\Large\bf}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{1.5ex plus
+ 1ex minus.2ex}{1ex plus.2ex}{\reset@font\large\bf}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{.5ex plus
+ .2ex minus.1ex}{.2ex plus.1ex}{\reset@font\normalsize\bf}}
+ 
+\def\thechapter       {\arabic{chapter}}
+\def\thesection       {(\arabic{section})}
+\def\thesubsection    {\alph{subsection})}
+\def\thesubsubsection {\roman{subsubsection})}
+ 
+\def\appendix{\par
+ \setcounter{chapter}{0}\setcounter{section}{0}
+ \setcounter{subsection}{0}
+ \def\thechapter{\appendixname‾\theappendixchapter}
+ \def\addcontents@message{\thechapter{\hskip 1em}}
+ \@addtoreset{equation}{chapter}
+ \def\theequation{\theappendixchapter.\arabic{equation}} }
+
+% tu-civil では不要だが・・・
+% 他のスタイルファイルで使っているので
+% \def\sectionlabel#1{\label{#1}}
+\let\Ref\ref
+
+% adjust \ref spacing in Japanese
+%
+\ifx\fakejchar\undefined
+ \def\refno#1{\mbox{#1}}
+\else
+ \def\refno#1{#1\,\fakejchar}
+\fi
+
+% FOOTNOTE style
+%  all lines are indented
+\long\def\@makefntext#1{\parindent 1em\noindent
+ \hbox to2em{\hss$\m@th^{\@thefnmark}$‾}% by watanabe
+ \@tempdima\columnwidth\advance\@tempdima-2em\parbox[t]{\@tempdima}{#1}}
+
+%[4] MATHEMATICAL EXPRESSIONS
+% MANYEQNS environment
+%    modification of eqnarray to set equation numbers like (3-a)...
+% leaders added originally by M.Watanabe(C)
+% doteqn.sty by Hideki Isozaki Mar. 1, 1992
+% doteqn-a.sty by Iwakuma Tetsuo + Watanabe Masatoshi, Mar. 4, 1992
+%  \dotfill by "." is replaced by \cdot
+% doteqn-f.sty               for fleqn.sty
+%
+% MANYEQNS environment - centering version:  T. Iwakuma 2/14/1991
+%    modification of eqnarray to set equation numbers like (3-a)...
+%
+\@definecounter{whichequation}
+% \def\themanyeqn{\theequation-\alph{whichequation}}
+\def\themanyeqn{\theequation\alph{whichequation}} %CHANGED
+\def\@manyeqnnum{{\rm (\themanyeqn)}}
+%
+\def\manyeqns{\stepcounter{equation}\let\@currentlabel=\themanyeqn
+  \setcounter{whichequation}{1}
+  \global\@eqnswtrue
+  \global\@eqcnt\z@\tabskip\@centering\let\\=\@manyeqncr
+  $$\halign to \displaywidth\bgroup\@eqnsel\hskip\@centering
+  $\displaystyle\tabskip\z@
+   \let\@currentlabel=\theequation
+  {##}$&\global\@eqcnt\@ne \hfil$\;{##}\;$\hfil
+  &\global\@eqcnt\tw@ $\displaystyle\tabskip\z@{##}$\hfil
+   \tabskip\@centering&\llap{##}\tabskip\z@\cr}
+%
+\def\endmanyeqns{\@@manyeqncr\egroup
+    \global\advance\c@equation\m@ne$$\global\@ignoretrue
+%            Note: always increment "equation" at MANYEQNS environment
+    \stepcounter{equation}}
+%
+\def\@manyeqncr{{\ifnum0=`}\fi\@ifstar{\global\@eqpen\@M
+    \@ymanyeqncr}{\global\@eqpen\interdisplaylinepenalty \@ymanyeqncr}}
+%
+\def\@ymanyeqncr{\@ifnextchar [{\@xmanyeqncr}{\@xmanyeqncr[\z@]}}
+%
+\def\@xmanyeqncr[#1]{\ifnum0=`{\fi}\@@manyeqncr
+   \noalign{\penalty\@eqpen\vskip\jot\vskip #1\relax}}
+%
+\def\@@manyeqncr{\let\@tempa\relax
+    \ifcase\@eqcnt \def\@tempa{& & &}\or \def\@tempa{& &}
+      \else \def\@tempa{&}\fi
+  \@tempa \if@eqnsw\@manyeqnnum\stepcounter{whichequation}\fi
+     \global\@eqnswtrue\global\@eqcnt\z@\cr}
+%
+% ついでに・・・副番号付きの，1行の複数の式　北大の泉先生が苦労したところ
+\def\twoeqns{$$\refstepcounter{equation}\let\@currentlabel=\theequation
+  \setcounter{whichequation}{0}\xdef\@twoequ@tions{\theequation}}
+\def\endtwoeqns{\eqno \hbox{{\rm (\@twoequ@tions)}}$$\@ignoretrue}
+\def\EQab{\stepcounter{whichequation}\let\@currentlabel=\themanyeqn%
+ \xdef\@twoequ@tions{\@twoequ@tions\ifnum\c@whichequation>\@ne,$\,$\fi%
+ \alph{whichequation}}%
+}
+% short equations さらについでに・・・
+\def\shorteqns{\stepcounter{equation}\let\@currentlabel=\themanyeqn
+  \let\nonumber\empty % just in case
+  \setcounter{whichequation}{1} \xdef\@shorteqnnum{\themanyeqn}%
+  \global\@eqnswtrue
+  \global\@eqcnt\z@\tabskip\@centering\let\\=\@shorteqncr
+  $$\halign to \displaywidth\bgroup\@eqnsel\hskip\@centering
+  $\displaystyle\tabskip\z@
+   \let\@currentlabel=\theequation
+  {##}$&\global\@eqcnt\@ne \hfil$\;{##}\;$\hfil
+  &\global\@eqcnt\tw@ $\displaystyle\tabskip\z@{##}$\hfil
+   \tabskip\@centering&\llap{##}\tabskip\z@\cr}
+%
+\def\endshorteqns{\@@shorteqncr\egroup
+    \global\advance\c@equation\m@ne$$\global\@ignoretrue
+%            Note: always increment "equation" at MANYEQNS environment
+    \stepcounter{equation}}
+%
+\def\@shorteqncr{{\ifnum0=`}\fi\@ifstar{\global\@eqpen\@M
+    \@yshorteqncr}{\global\@eqpen\interdisplaylinepenalty \@yshorteqncr}}
+%
+\def\@yshorteqncr{\@ifnextchar [{\@xshorteqncr}{\@xshorteqncr[\z@]}}
+%
+\def\@xshorteqncr[#1]{\ifnum0=`{\fi}\@@shorteqncr
+   \noalign{\penalty\@eqpen\vskip\jot\vskip #1\relax}}
+%
+\def\@@shorteqncr{\let\@tempa\relax
+    \ifcase\@eqcnt \def\@tempa{& & &}\or \def\@tempa{& &}
+      \else \def\@tempa{&}\fi
+  \@tempa \if@eqnsw{\rm (\@shorteqnnum)}\stepcounter{whichequation}%
+    \xdef\@shorteqnnum{\themanyeqn}\fi
+     \global\@eqnswtrue\global\@eqcnt\z@\cr}
+%
+\def\EQsep{\if@eqnsw\stepcounter{whichequation}\fi%
+  \xdef\@shorteqnnum{\@shorteqnnum,$\,$\alph{whichequation}}}
+%
+% EQNARRAY environment
+
+% eqnarray : short spacing
+%
+\def\eqnarray{\stepcounter{equation}\let\@currentlabel\theequation
+\global\@eqnswtrue\m@th
+\global\@eqcnt\z@\tabskip\@centering\let\\\@eqncr
+$$\halign to\displaywidth\bgroup\@eqnsel\hskip\@centering
+  $\displaystyle\tabskip\z@{##}$&\global\@eqcnt\@ne
+  \hfil$\;{##}\;$\hfil
+  &\global\@eqcnt\tw@ $\displaystyle\tabskip\z@{##}$\hfil
+   \tabskip\@centering&\llap{##}\tabskip\z@\cr}
+
+% MATH SYMBOLS
+%   therefore/because by m.watanabe@tainsbbms (Masatoshi Watanabe)
+%    in Math (triangular 3 dots): June 15, 1991
+\def\therefore{\setbox0 \hbox{$\cdot$}%
+ \raise-0.2em \copy0 \raise0.2em \copy0 \raise-0.2em \box0 ‾}
+\def\because{\setbox0\hbox{$\cdot$}%
+ \raise0.2em \copy0 \raise-0.2em \copy0 \raise0.2em \box0 ‾}
+%   Big Zeros from RAKU RAKU LaTeX book
+\def\bigzerol{\smash{\hbox{\huge 0}}}
+\def\bigzerou{\smash{\lower1.7ex\hbox{\huge 0}}}
+%   boldmath simplification
+\def\fat#1{\mbox{\boldmath{$#1$}}}
+%   always display style fraction
+\def\dfrac#1#2{\displaystyle{\frac{#1}{#2}}}
+%   slanted fraction from "LaTeX bibunsho sakusei nyumon"
+\def\slfrac#1#2{\leavevmode%    \kern-.1em% <---- 取り除く
+  \raise.5ex\hbox{$\scriptstyle #1$}\kern-.1em%
+  /\kern-.15em\lower.25ex\hbox{$\scriptstyle #2$}}
+%
+%   sub/super-script : \sup has been defined in the original TeX.
+\def\sub#1{_{\mbox{\scriptsize #1}}}
+\def\super#1{^{\mbox{\scriptsize #1}}}
+\def\subsc#1{_{\mbox{\footnotesize\sc \lowercase{#1}}}}
+\def\supersc#1{^{\mbox{\footnotesize\sc \lowercase{#1}}}}
+\def\d{\,\mbox{d}}
+\def\slfracd{\mbox{\scriptsize d}}
+%
+% partial diff's
+%                             d4 f(x,y)
+% \D[4][3][y]{f(x,y)}{x} --> -----------
+%   ^^^^^^^^^                  dx d3 y
+%    options
+%                \D : partial diff,   \D* : ordinary diff
+\def\D{\@ifstar{\@OD}{\@PD}}
+%
+\def\@OD{\@ifnextchar [{\@OD@}{\@OD@[1]}}
+\def\@OD@[#1]#2#3{%
+  \ifdim#1pt<1.5pt\def\@tempa{}\else\def\@tempa{^#1}\fi
+  \dfrac{\mbox{d}\@tempa #2}{\mbox{d}#3\@tempa}}
+%
+\def\@PD{\@ifnextchar [{\@D@}{\@D@[1]}}
+\def\@D@[#1]{\@ifnextchar [{\@D@@[#1]}{\@D@@[#1][0]}}
+\def\@D@@[#1][#2]{\@ifnextchar [{\@@D@@[#1][#2]}{\@@D@@[#1][0][s]}}
+\def\@@D@@[#1][#2][#3]#4#5{%
+  \ifdim#1pt<1.5pt\def\@tempa{\partial #4}\else
+                  \def\@tempa{\partial^#1 #4}\fi
+  \ifdim#2pt<.5pt\def\@tempb{}\else
+    \ifdim#2pt<1.5pt\def\@tempb{\partial#3}%
+     \else\def\@tempb{\partial#3^#2}%
+    \fi
+  \fi
+  \count0=#1\advance\count0-#2
+  \ifdim\the\count0pt<.5pt\dfrac{\@tempa}{\@tempb}\else
+    \ifdim\the\count0pt<1.5pt\dfrac{\@tempa}{\partial#5\,\@tempb}\else
+      \dfrac{\@tempa}{\partial#5^\the\count0\,\@tempb}%
+    \fi
+  \fi}
+
+%[5] FLOATS
+% PHOTOS : new float
+\newcounter{photo}[chapter]
+\def\thephoto{\thechapter.\@arabic\c@photo}
+\def\fps@photo{tbp}
+\def\ftype@photo{4}
+\def\ext@photo{lop}
+\def\fnum@photo{\photoname \thephoto}
+\def\photo{\@float{photo}}
+\let\endphoto\end@float
+\@namedef{photo*}{\@dblfloat{photo}}
+\@namedef{endphoto*}{\end@dblfloat}
+
+% FIGURE/TABLE/PHOTO CAPTIONS
+%   style change {\bf }
+%
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \setbox\@tempboxa\hbox{{\bf #1}\ \ }%
+   \@tempdima\hsize\advance\@tempdima-\wd\@tempboxa
+   \setbox\@tempboxa\hbox{{\bf #1}\ \ #2}%
+%   \sbox\@tempboxa{#1: #2}%
+  \ifdim \wd\@tempboxa >\hsize
+      \hbox to\hsize{\hfil {\bf #1}\ \ \parbox[t]\@tempdima{#2}\hfil}%
+%     #1: #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+%
+% \long\def\@makecaption#1#2{%
+%    \vskip 10\p@
+%    \setbox\@tempboxa\hbox{{\bf #1}\ \ }%
+%     \@tempdima\hsize\advance\@tempdima-\wd\@tempboxa
+%     \setbox\@tempboxa\hbox{{\bf #1}\ \ #2}
+%    \ifdim \wd\@tempboxa <\hsize
+%        \hfil {\bf#1}\ \ #2\hfil\par
+%      \else
+%        \hbox to\hsize{\hfil {\bf #1}\ \ \parbox[t]\@tempdima{#2}\hfil}%
+%    \fi}
+%
+% FIGURE/TABLE/PHOTO REFERENCE
+% \def\figno#1{{\bf\figurename#1}}
+% \def\tabno#1{{\bf\tablename\ifEN@LISH\ \fi#1}}
+% \def\photono#1{{\bf\photoname\ifEN@LISH\ \fi#1}}
+\def\figno{\@ifstar{\@floatno{\figurename}}{\@floatnoo{\figurename}}}
+\def\tabno{\@ifstar{\@floatno{\tablename}}{\@floatnoo{\tablename}}}
+\def\photono{\@ifstar{\@floatno{\photoname}}{\@floatnoo{\photoname}}}
+%
+\def\@floatno#1#2{{\bf #1\ifEN@LISH\ \fi#2}}
+\ifx\fakejchar\undefined
+ \def\@floatnoo#1#2{{\bf #1\ifEN@LISH\ #2\else\mbox{#2}\fi}}
+\else
+ \def\@floatnoo#1#2{{\bf #1\ifEN@LISH\ #2\else#2\,\fakejchar\fi}}
+\fi
+%
+%  plural #1 in English only
+\def\figsno#1#2{{\bf\figuresname#1}\ignorespaces\ and\ {\bf#2}}
+\def\tabsno#1#2{{\bf\tablesname\ #1}\ignorespaces\ and\ {\bf#2}}
+\def\photosno#1#2{{\bf\photosname\ #1}\ignorespaces\ and\ {\bf#2}}
+
+% DASHED-LINE for tabular env.  by H.Isozaki
+\def\dlinepattern#1#2{%
+ \ifdim#2<#1 \errmessage{First arg. must be <= Second one.}%
+ \else \gdef\dline@solid{#1}\gdef\dline@period{#2}%
+ \fi}
+\dlinepattern{2pt}{4pt} % default
+ 
+\def\dline#1{\@dline[#1]}
+\def\@dline[#1-#2]{\noalign{\global\@cla#1\relax
+\global\advance\@cla\m@ne
+\ifnum\@cla>\z@\global\let\@gtempa\@dlinea\else
+  \global\let\@gtempa\@dlineb\fi
+\global\@clb#2\relax
+\global\advance\@clb-\@cla}\@gtempa
+\noalign{\vskip-\arrayrulewidth}}
+ 
+\def\@dlinea{\multispan\@cla&\multispan\@clb
+\unskip\cleaders\hbox to \dline@period
+{\hss\rule{\dline@solid}{\arrayrulewidth}\hss}\hfill
+\cr}
+ 
+\def\@dlineb{\multispan\@clb
+\unskip\cleaders\hbox to \dline@period
+{\hss\rule{\dline@solid}{\arrayrulewidth}\hss}\hfill
+\cr}
+
+% subfloat.sty:    set sub-number within one float
+% Iwakuma Tetsuo (bear@hashi1.civil.tohoku.ac.jp)  8/7/1992
+%                                                10/10/1992
+%                   header control added       4/19-22/1993
+%                   header control added           8/7/1993
+%
+\@definecounter{subfloatnumber}
+\def\@T@bLe{table}
+\def\subfloatcap{-\alph{subfloatnumber}} % default
+%
+\newif\if@subfloatcaptionhead \@subfloatcaptionheadtrue
+\def\NoSubfloatCaptionHead{\@subfloatcaptionheadfalse}
+%
+\newif\if@subfloatwithcaptionhead
+\def\subcaption{\@ifstar{%
+  \@subfloatwithcaptionheadfalse\subc@ption}{%
+  \@subfloatwithcaptionheadtrue\subc@ption}}
+%
+\def\subc@ption{\@addtoreset{subfloatnumber}{\@captype}%
+  \ifx\@captype\@T@bLe\relax\else\addtocounter{\@captype}{1}\fi%
+  \def\the@subfloatnumber{\csname the\@captype\endcsname\subfloatcap}%
+  \stepcounter{subfloatnumber}%
+  \edef\@currentlabel{\csname the@subfloatnumber\endcsname}%
+  \@dblarg{\@subcaption\@captype}}
+%
+\long\def\@subcaption#1[#2]#3{\par\addcontentsline{\csname
+  ext@#1\endcsname}{#1}{\protect\numberline{\csname
+  the#1\endcsname\subfloatcap}{\ignorespaces #2}}\begingroup
+    \@parboxrestore
+    \small
+   \if@subfloatcaptionhead
+    \if@subfloatwithcaptionhead
+     \@makecaption{\csname fnum@#1\endcsname\subfloatcap}%
+         {\ignorespaces #3}\par
+    \else
+     \@makecaptionWOheading{\subfloatcap}{\ignorespaces #3}
+    \fi
+   \else\@makecaptionWOheading{}{\ignorespaces #3}\par\fi
+    \endgroup%
+     \ifx\@captype\@T@bLe\relax\else\addtocounter{\@captype}{-1}\fi}
+%
+\long\def\@makecaptionWOheading#1#2{%
+  \vskip 10\p@
+  \setbox\@tempboxa\hbox{#1 #2}%
+  \ifdim \wd\@tempboxa >\hsize
+      #1 #2\par
+    \else
+      \hbox to\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi}
+
+% FIGURES, PHOTOS AND TABLES at the end of thesis
+\def\figuresandtableshere{%
+ \def\thefigure{\@arabic\c@figure}
+ \def\thetable{\@arabic\c@table}
+ \def\thephoto{\@arabic\c@photo}
+ \newpage}
+
+% LIST OF PHOTOS
+\def\listofphotos{\@restonecolfalse
+  \if@twocolumn\@restonecoltrue\onecolumn\fi
+  \chapter*{\listphotoname\@mkboth{\uppercase{\listphotoname}}%
+   {\uppercase{\listphotoname}}}\@starttoc{lop}\if@restonecol
+  \twocolumn\fi}
+
+\let\l@photo\l@figure
+
+%[6] BIBLIOGRAPHY
+% SPECIAL DEFINITIONS OF BIBLIOGRAPHY STYLE #2
+%                            by M.Watanabe (m.watanabe@tainsbbms)
+%                                                     (C) 1990,10/06
+% and partially T.Iwakuma(bear@hashi1.civil.tohoku.ac.jp, bear@tainsbbms)
+%
+%  \cite           : $^{\mbox{\scriptsize LABEL)}}$
+%                    $^{\mbox{\scriptsize LABEL1) LABEL2) ...}}$
+%
+%  \thebibliography: LABEL)
+%
+% \nobreak is added
+\DeclareRobustCommand\cite{%
+  \@ifnextchar [{\@tempswatrue\nobreak\kern-0ex\@citex}{\@tempswafalse\nobreak\kern-0ex\@citex[]}}
+%
+\def\@citex[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \let\@citea\@empty
+  \@cite{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{),\penalty\@m}%
+     \def\@tempa##1##2\@nil{\edef\@citeb{\if##1\space##2\else##1##2\fi}}%
+     \expandafter\@tempa\@citeb\@nil
+     \@ifundefined{b@\@citeb}{{\reset@font\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+     \hbox{\csname b@\@citeb\endcsname}}}{#1}}
+ 
+\def\@cite#1#2{\leavevmode\hbox{$^{%              by Isozaki
+  \mbox{\scriptsize{#1\if@tempswa , #2\fi})}}$}}
+ 
+\def\@biblabel#1{#1)}
+
+% \textcite
+%
+\def\textcite{\@tempswafalse\nobreak\@textcitex[]}
+%
+\def\@textcitex[#1]#2{%
+ \if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+%   \let\@citea\@empty
+  \let\@citea\,
+  \@textcite{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{),\penalty\@m\ }%
+     \def\@tempa##1##2\@nil{\edef\@citeb{\if##1\space##2\else##1##2\fi}}%
+     \expandafter\@tempa\@citeb\@nil
+     \@ifundefined{b@\@citeb}{{\reset@font\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+     \hbox{\csname b@\@citeb\endcsname}}}{#1}}
+%
+\def\@textcite#1#2{{#1\if@tempswa ), #2\fi})}
+%
+% 二つの〜を用いた引用
+\DeclareRobustCommand\CITE{%
+  \@ifnextchar [{\@tempswatrue\nobreak\@CITEx}{\@tempswafalse\nobreak\@CITEx[]}}
+%
+\def\@CITEx[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \let\@citea\@empty
+  \@cite{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{)$\,\sim\,$\penalty\@m}%
+     \def\@tempa##1##2\@nil{\edef\@citeb{\if##1\space##2\else##1##2\fi}}%
+     \expandafter\@tempa\@citeb\@nil
+     \@ifundefined{b@\@citeb}{{\reset@font\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+     \hbox{\csname b@\@citeb\endcsname}}}{#1}}
+%
+% REFERENCE style
+\def\thebibliography#1{\renewcommand{\baselinestretch}{1}%
+  \chapter*{\bibname\@mkboth
+  {\uppercase{\bibname}}{\uppercase{\bibname}}}\list
+  {\@biblabel{\arabic{enumi}}}{\settowidth\labelwidth{\@biblabel{#1}}%
+   \leftmargin\labelwidth
+   \advance\leftmargin\labelsep
+   \usecounter{enumi}%
+   \let\p@enumi\@empty
+   \def\theenumi{\arabic{enumi}}}%
+     \typeout{\bibname.}
+     \addcontentsline{toc}{chapter}{\bibname}
+   \def\newblock{\hskip .11em plus.33em minus.07em}%
+   \sloppy\clubpenalty4000\widowpenalty4000
+   \sfcode`\.=\@m}
+
+\def\endthebibliography{%
+  \def\@noitemerr{\@warning{Empty `thebibliography' environment}}%
+  \endlist}
+%
+% ETC.
+%
+% ENCIRCLED numerals by Hideki ISOZAKI
+%
+\def\MARU#1{{\ooalign
+  {\hfill$\scriptstyle#1$\hfill\crcr$\bigcirc$}}}
+%
+% 温度 degree centigrade
+\def\degC{$\mbox{}^\circ$\kern-.2ex C}
+%
+% 履歴
+\ifx\fakejchar\undefined
+   \usepackage{nruby}
+\else
+   \usepackage{c-ruby}
+   \def\rubyfont{%
+    \let\jhira=\fivedmjhira}%
+    \let\@originalruby\ruby
+    \def\ruby#1#2{\@originalruby{#2}{#1}}%
+\fi
+\def\researchadvisor#1{\gdef\@researchadvisor{#1}}
+
+\def\me#1#2#3#4{\gdef\@mes{#1}\gdef\@mesr{#2}\gdef\@mef{#3}\gdef\@mefr{#4}}
+
+\def\bdate{\@ifstar{\@bdateshowa}{\@bdateheisei}}
+\def\@bdateshowa#1{\ifEN@LISH\@bdateeng{#1}\else\gdef\@bdate{%
+\raisebox{-.5zw}{%
+\shortstack[c]{{\unitlength=1zw%
+\begin{picture}(2.4,1.2)\put(1.2,0.6){\oval(2.4,1.2)}%
+\put(0.2,0.2){昭和}\end{picture}}\\平成}
+}　#1 生}\fi}
+\def\@bdateheisei#1{\ifEN@LISH\@bdateeng{#1}\else\gdef\@bdate{%
+\raisebox{-.5zw}{%
+\shortstack[c]{昭和\\{\unitlength=1zw%
+\begin{picture}(2.4,1.2)\put(1.2,0.6){\oval(2.4,1.2)}%
+\put(0.2,0.2){平成}\end{picture}}}
+}　#1 生}\fi}
+\def\@bdateeng#1{\gdef\@bdate{Date of Birth ‾‾ #1}}
+
+\def\ken{%
+\hfill\raisebox{-.5zw}{% [0pt][0pt]{
+\shortstack[l]{都・道\\府・県\kern -1.1zw {\Large$\bigcirc$}}}
+}
+\def\fu{%
+\hfill\raisebox{-.5zw}{% [0pt][0pt]{
+\shortstack[l]{都・道\\府\kern -1.1zw {\Large$\bigcirc$}\kern -.2zw ・県}}
+}
+\def\dou{%
+\hfill\raisebox{-.5zw}{% [0pt][0pt]{
+\shortstack[l]{都・道\kern -1.1zw {\Large$\bigcirc$}\\府・県}}
+}
+\def\toto{%
+\hfill\raisebox{-.5zw}{% [0pt][0pt]{
+\shortstack[l]{都\kern -1.1zw {\Large$\bigcirc$}\kern -.2zw ・道\\府・県}}
+}
+\def\bplace[#1]#2{\gdef\@bplace{%
+\ifdim#1pt<1.5pt 　#2\toto\else% 都
+\ifdim#1pt<2.5pt 　#2\dou\else% 道
+\ifdim#1pt<3.5pt 　#2\fu\else% 府
+　#2\ken % 県
+\fi\fi\fi}}
+\def\nationality#1{\gdef\@nationality{Nationality ‾‾ #1}}
+
+\def\入学{\hfill 入学}
+\def\卒業{\hfill 卒業}
+\def\修了{\hfill 修了}
+\def\修了見込{\hfill 修了見込}
+\def\編入学{\hfill 編入学}
+\def\同{\hspace{3cm}  同 \hfill}
+
+\def\acAe#1#2#3#4{\gdef\@acAds{#1}\gdef\@acAde{#2}\gdef\@acA{#3}\gdef\@acAx{#4}}
+\def\acBe#1#2#3#4{\gdef\@acBds{#1}\gdef\@acBde{#2}\gdef\@acB{#3}\gdef\@acBx{#4}}
+\def\acCe#1#2#3#4{\gdef\@acCds{#1}\gdef\@acCde{#2}\gdef\@acC{#3}\gdef\@acCx{#4}}
+\def\acDe#1#2#3#4{\gdef\@acDds{#1}\gdef\@acDde{#2}\gdef\@acD{#3}\gdef\@acDx{#4}}
+\def\acEe#1#2#3#4{\gdef\@acEds{#1}\gdef\@acEde{#2}\gdef\@acE{#3}\gdef\@acEx{#4}}
+\def\jobAe#1#2#3#4{\gdef\@jobAds{#1}\gdef\@jobAde{#2}\gdef\@jobA{#3}\gdef\@jobAx{#4}}
+\def\jobBe#1#2#3#4{\gdef\@jobBds{#1}\gdef\@jobBde{#2}\gdef\@jobB{#3}\gdef\@jobBx{#4}}
+\def\jobCe#1#2#3#4{\gdef\@jobCds{#1}\gdef\@jobCde{#2}\gdef\@jobC{#3}\gdef\@jobCx{#4}}
+
+
+\def\acA#1#2{\gdef\@acAd{#1}\gdef\@acA{#2}}
+\def\acB#1#2{\gdef\@acBd{#1}\gdef\@acB{#2}}
+\def\acC#1#2{\gdef\@acCd{#1}\gdef\@acC{#2}}
+\def\acD#1#2{\gdef\@acDd{#1}\gdef\@acD{#2}}
+\def\acE#1#2{\gdef\@acEd{#1}\gdef\@acE{#2}}
+\def\acF#1#2{\gdef\@acFd{#1}\gdef\@acF{#2}}
+\def\acG#1#2{\gdef\@acGd{#1}\gdef\@acG{#2}}
+\def\acH#1#2{\gdef\@acHd{#1}\gdef\@acH{#2}}
+
+\def\jobA#1#2{\gdef\@jobAd{#1}\gdef\@jobA{#2}}
+\def\jobB#1#2{\gdef\@jobBd{#1}\gdef\@jobB{#2}}
+\def\jobC#1#2{\gdef\@jobCd{#1}\gdef\@jobC{#2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\long\def\DoVita{%
+\ifgraduation\else
+\thispagestyle{empty}
+%
+\ifEN@LISH
+%
+\mbox{}\vspace{-2.5cm}
+\begin{center}
+\begin{tabular}{|p{3.5cm}|p{11.5cm}|}\hline
+\mbox{}\hfill \raisebox{-1ex}[0pt][0pt]{\shortstack[c]{\small Advising Professor at\\\small Tohoku Univ.}} \hfill\mbox{} &
+\mbox{}\hfill \@principaladvisor \hfill\mbox{} \\\hline
+\mbox{}\hfill \raisebox{-.7ex}[0pt][0pt]{\shortstack[c]{\small Research Advisor at\\\small Tohoku Univ.}} \hfill\mbox{} &
+\mbox{}\hfill \@researchadvisor \hfill\mbox{} \\\hline
+ & \underline{$\bigcirc$‾‾ \@principaladvisor} \\[-3mm]
+\mbox{}\hfill \raisebox{.5ex}[0pt][0pt]{\shortstack[c]{\small Dissertation\\\small Committee Members}} \hfill\mbox{} &
+ \underline{1‾‾ \@firstreader}　　\underline{2‾‾ \@secondreader} \\[-3mm]
+\mbox{}\hfill \raisebox{-.7ex}[0pt][0pt]{\shortstack[c]{\small Name marked with\\\small ``$\bigcirc$'' is the Chief}} \hfill\mbox{} &
+ \@ifundefined{@thirdreader}{}{\underline{3‾‾ \@thirdreader}}　　%
+ \@ifundefined{@fourthreader}{}{\underline{4‾‾ \@fourthreader}} \\[-3mm]
+ \mbox{}\hfill\raisebox{.3ex}[0pt][0pt]{{\small Examiner}}\hfill\mbox{} &
+ \@ifundefined{@fifthreader}{}{\underline{5‾‾ \@fifthreader}}　　%
+ \@ifundefined{@sixthreader}{}{\underline{6‾‾ \@sixthreader}} \\\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{7cm}|p{8cm}|} \hline
+\multicolumn{2}{|c|}{Author's Profile} \\\hline
+Name‾‾‾ \ruby{\@mes}{\@mesr}, \ruby{\@mef}{\@mefr} &
+\@bdate \\\hline
+\@nationality & \\\hline
+\end{tabular}
+\end{center}
+\vspace{-10mm}
+\begin{center}
+\begin{tabular}{|p{4cm}|p{11cm}|}
+\multicolumn{2}{|c|}{Curriculum Vitae} \\\hline
+\multicolumn{2}{|l|}{Educational Background} \\\hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@acAds\\ To\\ ‾‾ \@acAde}} &
+ \ifx\@acAx\@empty \@acA \else \shortstack[l]{\@acA\\\@acAx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@acBds\\ To\\ ‾‾ \@acBde}} &
+ \ifx\@acBx\@empty \@acB \else \shortstack[l]{\@acB\\\@acBx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@acCds\\ To\\ ‾‾ \@acCde}} &
+ \ifx\@acCx\@empty \@acC \else \shortstack[l]{\@acC\\\@acCx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@acDds\\ To\\ ‾‾ \@acDde}} &
+ \ifx\@acDx\@empty \@acD \else \shortstack[l]{\@acD\\\@acDx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@acEds\\ To\\ ‾‾ \@acEde}} &
+ \ifx\@acEx\@empty \@acE \else \shortstack[l]{\@acE\\\@acEx} \fi  \\ \hline
+\multicolumn{2}{|l|}{Work Experience} \\\hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@jobAds\\ To\\ ‾‾ \@jobAde}} &
+ \ifx\@jobAx\@empty \@jobA \else \shortstack[l]{\@jobA\\\@jobAx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@jobBds\\ To\\ ‾‾ \@jobBde}} &
+ \ifx\@jobBx\@empty \@jobB \else \shortstack[l]{\@jobB\\\@jobBx} \fi  \\ \hline
+ \raisebox{-3ex}[30pt]{\shortstack[l]{From\\ ‾‾ \@jobCds\\ To\\ ‾‾ \@jobCde}} &
+ \ifx\@jobCx\@empty \@jobC \else \shortstack[l]{\@jobC\\\@jobCx} \fi  \\ \hline
+\end{tabular}
+\end{center}
+
+{
+\footnotesize
+
+\noindent
+Note: Educational background has to be filled in,
+ starting from the date of university enrollment.
+}
+%
+\else
+%
+\mbox{}\vspace{-2.5cm}
+\begin{center}
+\begin{tabular}{|p{3cm}|p{12cm}|}\hline
+\mbox{}\hfill 指導教員 \hfill\mbox{} &
+\mbox{}\hfill \@principaladvisor \hfill\mbox{} \\\hline
+\mbox{}\hfill 研究指導教員 \hfill\mbox{} &
+\mbox{}\hfill \@researchadvisor \hfill\mbox{} \\\hline
+ & \underline{○　\@principaladvisor} \\[-3mm]
+\mbox{}\hfill 審 査 委 員 \hfill\mbox{} &
+ \underline{1　\@firstreader}　　\underline{2　\@secondreader} \\[-3mm]
+\mbox{}\hfill （○印は主査） \hfill\mbox{} &
+ \@ifundefined{@thirdreader}{}{\underline{3　\@thirdreader}}　　%
+ \@ifundefined{@fourthreader}{}{\underline{4　\@fourthreader}} \\[-3mm]
+ &
+ \@ifundefined{@fifthreader}{}{\underline{5　\@fifthreader}}　　%
+ \@ifundefined{@sixthreader}{}{\underline{6　\@sixthreader}} \\\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{7cm}|p{8cm}|} \hline
+\multicolumn{2}{|c|}{提　出　者　略　歴} \\\hline
+\ruby{氏　名}{ふりがな}　\ruby{\@mes}{\@mesr}　\ruby{\@mef}{\@mefr} &
+\@bdate \\\hline
+本　籍 \@bplace & 国籍　 \\\hline
+\end{tabular}
+\end{center}
+\ifx\fakejchar\undefined
+ \vspace{-10mm}
+\else
+ \vspace{-6mm}
+\fi
+\begin{center}
+\begin{tabular}{|p{4cm}|p{11cm}|}
+\multicolumn{2}{|c|}{履　歴　事　項} \\\hline
+\multicolumn{2}{|l|}{【学歴】} \\\hline
+ \@acAd & \@acA \\ \hline
+ \@acBd & \@acB \\ \hline
+ \@acCd & \@acC \\ \hline
+ \@acDd & \@acD \\ \hline
+ \@acEd & \@acE \\ \hline
+ \@acFd & \@acF \\ \hline
+ \@acGd & \@acG \\ \hline
+ \@acHd & \@acH \\ \hline
+\multicolumn{2}{|l|}{【職歴】} \\\hline
+ \@jobAd & \@jobA \\ \hline
+ \@jobBd & \@jobB \\ \hline
+ \@jobCd & \@jobC \\ \hline
+\end{tabular}
+\end{center}
+
+{
+\footnotesize
+
+\noindent
+備考(1)外国人留学生は，国籍を記入すること。\\[-3mm]
+\phantom{備考} (2)履歴事項は，大学入学から年次にしたがって記入すること。
+}
+%
+\fi
+%
+\fi
+}
+
+\endinput
+
+% end of tu-civil.sty

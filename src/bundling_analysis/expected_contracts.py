@@ -11,41 +11,60 @@ from math import ceil, comb
 from typing import Sequence
 
 
+def _solve_linear_system(matrix: list[list[float]], rhs: list[float]) -> list[float]:
+    """Solve ``matrix @ x = rhs`` by Gaussian elimination with partial pivoting."""
+
+    size = len(matrix)
+    augmented = [row[:] + [rhs[i]] for i, row in enumerate(matrix)]
+    for col in range(size):
+        pivot_row = max(range(col, size), key=lambda r: abs(augmented[r][col]))
+        if abs(augmented[pivot_row][col]) == 0.0:
+            raise ValueError("non-repair transition block must be transient")
+        augmented[col], augmented[pivot_row] = augmented[pivot_row], augmented[col]
+        pivot = augmented[col][col]
+        for r in range(size):
+            if r == col:
+                continue
+            factor = augmented[r][col] / pivot
+            for c in range(col, size + 1):
+                augmented[r][c] -= factor * augmented[col][c]
+    return [augmented[i][size] / augmented[i][i] for i in range(size)]
+
+
 def repair_probability_from_transition_matrix(
     transition_matrix: Sequence[Sequence[float]],
 ) -> tuple[tuple[float, ...], float]:
-    """Compute single-bridge repair probability from a 3-state transition matrix.
+    """Compute single-bridge repair probability from an m-state transition matrix.
 
-    The current paper model uses two non-repair states and one repair-trigger
-    state. For a matrix partitioned as ``P = [[T, r], [0, 1]]``, this computes
-    ``pi = e1'(I - T)^-1 / (e1'(I - T)^-1 1)`` and ``q = pi r``.
+    The paper model uses ``m - 1`` non-repair states and one repair-trigger
+    state (the last state). For a matrix partitioned as ``P = [[T, r], [0, 1]]``,
+    this computes ``pi = e1'(I - T)^-1 / (e1'(I - T)^-1 1)`` and ``q = pi r``.
 
-    This implementation is specialized to the 3-state case to keep the
-    dependency footprint small.
+    This is the same general algorithm as ``compute_repair_probability`` in the
+    original analysis notebook (``20251208_定期打ち合わせ/20251206.ipynb`` cell 26),
+    which drove the actual results; it replaces an earlier 3-state-only closed
+    form. Implemented with the standard library only (Gaussian elimination on
+    ``(I - T)' x = e1``) so the module stays dependency-free.
     """
 
-    if len(transition_matrix) != 3 or any(len(row) != 3 for row in transition_matrix):
-        raise ValueError("transition_matrix must be a 3x3 matrix")
+    size = len(transition_matrix)
+    if size < 2 or any(len(row) != size for row in transition_matrix):
+        raise ValueError("transition_matrix must be a square matrix of size >= 2")
 
-    p11 = float(transition_matrix[0][0])
-    p12 = float(transition_matrix[0][1])
-    p13 = float(transition_matrix[0][2])
-    p22 = float(transition_matrix[1][1])
-    p23 = float(transition_matrix[1][2])
+    m = size - 1  # number of non-repair (transient) states
+    t_block = [[float(transition_matrix[i][j]) for j in range(m)] for i in range(m)]
+    r_column = [float(transition_matrix[i][m]) for i in range(m)]
 
-    # Inverse of [[1-p11, -p12], [0, 1-p22]], left-multiplied by e1'.
-    a = 1.0 - p11
-    d = 1.0 - p22
-    if a == 0 or d == 0:
-        raise ValueError("non-repair transition block must be transient")
-
-    numerator_1 = 1.0 / a
-    numerator_2 = p12 / (a * d)
-    denominator = numerator_1 + numerator_2
-    pi_1 = numerator_1 / denominator
-    pi_2 = numerator_2 / denominator
-    q = pi_1 * p13 + pi_2 * p23
-    return (pi_1, pi_2), q
+    # e1'(I - T)^-1 equals the solution x of (I - T)' x = e1.
+    i_minus_t_transposed = [
+        [(1.0 if i == j else 0.0) - t_block[j][i] for j in range(m)] for i in range(m)
+    ]
+    e1 = [1.0] + [0.0] * (m - 1)
+    numerator = _solve_linear_system(i_minus_t_transposed, e1)
+    denominator = sum(numerator)
+    pi = tuple(value / denominator for value in numerator)
+    q = sum(pi_i * r_i for pi_i, r_i in zip(pi, r_column))
+    return pi, q
 
 
 def expected_contracts(num_bridges: int, bundle_limit: int, repair_probability: float) -> float:
@@ -86,9 +105,13 @@ COMPARISON_TRANSITION_MATRIX = (
     (0.0, 0.0, 1.0),
 )
 
+# Full-precision values from
+# 20251208_定期打ち合わせ/results/main/20251207_200558/emarkov_results/
+#   with_supply_collapse/with_supply_collapse_transition_matrix.csv
+# (with_supply series; matches the midterm-review pptx chart4 q within ~5.4e-6).
 OPTIMIZATION_TRANSITION_MATRIX = (
-    (0.9132082586632038, 0.08616179766540086, 0.00062994367139535),
-    (0.0, 0.9857337922074478, 0.01426620779255218),
+    (9.132011474084255065e-01, 8.616882547596728392e-02, 6.300271156072234646e-04),
+    (0.0, 9.857330912701161019e-01, 1.426690872988389813e-02),
     (0.0, 0.0, 1.0),
 )
 

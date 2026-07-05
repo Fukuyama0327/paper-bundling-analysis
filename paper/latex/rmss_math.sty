@@ -1,0 +1,47 @@
+% ============================================================
+% rmss_math.sty
+% ------------------------------------------------------------
+% 数学環境マクロ
+% ============================================================
+\usepackage{rmss_symbol,amsthm}
+% ------------------------------------------------------------
+% 定理環境
+% ------------------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{jThm}{定理}[section]
+\newtheorem{jLem}{補題}[jThm]
+\newtheorem{jCor}[jThm]{系}
+\newtheorem{jPrp}[jThm]{命題}
+\newtheorem{jDfn}[jThm]{定義}
+\newtheorem{jExm}[jThm]{例}
+
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theory}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prp}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem{dfn}[thm]{Definition}
+\newtheorem{exm}[thm]{Example}
+
+% ------------------------------------------------------------
+% 数理計画問題
+% ------------------------------------------------------------
+\newcommand{\Prb}[1]{\text{\sf [#1]}}
+
+% ------------------------------------------------------------
+% Sanself 体
+% ------------------------------------------------------------
+\newcommand{\SF}[1]{{\sf #1}}
+
+% ------------------------------------------------------------
+% 
+% ------------------------------------------------------------
+\newenvironment{bMatriX}[2][1.8mm]%
+{\setlength{\arraycolsep}{#1}\renewcommand\arraystretch{1}\left[\hspace*{-\arraycolsep}\begin{array}{#2}}%
+{\end{array}\hspace*{-\arraycolsep}\right]}
+\newenvironment{MatriX}[2][1.8mm]%
+{\setlength{\arraycolsep}{#1}\renewcommand\arraystretch{1}\hspace*{-\arraycolsep}\begin{array}{#2}}%
+{\end{array}\hspace*{-\arraycolsep}}
+\newenvironment{bsmallmatrix}{\left[\begin{smallmatrix}}{\end{smallmatrix}\right]}

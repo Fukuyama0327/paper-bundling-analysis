@@ -1,0 +1,791 @@
+% ============================================================
+% rmss_symbol.sty
+% ------------------------------------------------------------
+% 数学記号マクロ
+% ============================================================
+\usepackage{amsmath}
+\usepackage{amssymb}
+% ------------------------------------------------------------
+% 演算子
+% ------------------------------------------------------------
+% 最小，最大，引数
+\DeclareMathOperator*{\MIN}{\min.}
+\DeclareMathOperator*{\MAX}{\max.}
+\DeclareMathOperator*{\ARG}{\arg.}
+% 定義
+\newcommand{\DEF}{\coloneqq}
+\newcommand{\FED}{\eqqcolon}
+% 除算の行内表現
+\newcommand{\lfrac}[2]{ \left.{#1}\right/{#2} }
+% 偏微分
+\newcommand{\PDF}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\PDDF}[3]{\frac{\partial^2 #1}{\partial #2 \partial #3}}
+\newcommand{\PDDDF}[4]{\frac{\partial^3 #1}{\partial #2 \partial #3 \partial #4}}
+\newcommand{\PDNF}[3]{\frac{\partial^#3 #1}{\partial {#2}^#3}}
+\newcommand{\ODF}[2]{\frac{\mathrm{d} #1}{\mathrm{d}#2}}
+\newcommand{\ODNF}[3]{\frac{\mathrm{d}^#3 #1}{\mathrm{d} {#2}^#3}}
+% -----
+% その他の記号
+% -----
+% 微小変化
+\newcommand{\Id}[1]{\mathrm{d}{#1}}
+% 定数
+\newcommand{\Const}{\text{const.}}
+% subject to
+\newcommand{\Subto}[1]{\text{s.t. }{#1}}
+% 行列の転置
+%\newcommand{\Trns}[1]{{}'}
+\newcommand{\Trns}[1]{#1^{\top}}
+% 指数
+\newcommand{\EXP}[1]{\mathrm{exp}\left[#1\right]}
+% 期待値
+\newcommand{\Expct}[1]{\mathbb{E}\left[#1\right]}
+% indicator function
+\newcommand{\Ind}[1]{I_{\left\{#1\right\}}}
+% ------------------------------------------------------------
+% ベクトル
+% ------------------------------------------------------------
+% \Vt0, \Vt1 などが利用可能
+%\newcommand{\Vt}[1]{\boldmath{#1}}
+\newcommand{\Vt}[1]{\boldsymbol{#1}}
+% ラテン小文字
+\newcommand{\Vta}{\Vt{a}}
+\newcommand{\Vtb}{\Vt{b}}
+\newcommand{\Vtc}{\Vt{c}}
+\newcommand{\Vtd}{\Vt{d}}
+\newcommand{\Vte}{\Vt{e}}
+\newcommand{\Vtf}{\Vt{f}}
+\newcommand{\Vtg}{\Vt{g}}
+\newcommand{\Vth}{\Vt{h}}
+\newcommand{\Vti}{\Vt{i}}
+\newcommand{\Vtj}{\Vt{j}}
+\newcommand{\Vtk}{\Vt{k}}
+\newcommand{\Vtl}{\Vt{l}}
+\newcommand{\Vtm}{\Vt{m}}
+\newcommand{\Vtn}{\Vt{n}}
+\newcommand{\Vto}{\Vt{o}}
+\newcommand{\Vtp}{\Vt{p}}
+\newcommand{\Vtq}{\Vt{q}}
+\newcommand{\Vtr}{\Vt{r}}
+\newcommand{\Vts}{\Vt{s}}
+\newcommand{\Vtt}{\Vt{t}}
+\newcommand{\Vtu}{\Vt{u}}
+\newcommand{\Vtv}{\Vt{v}}
+\newcommand{\Vtw}{\Vt{w}}
+\newcommand{\Vtx}{\Vt{x}}
+\newcommand{\Vty}{\Vt{y}}
+\newcommand{\Vtz}{\Vt{z}}
+% ラテン大文字
+\newcommand{\VtA}{\Vt{A}}
+\newcommand{\VtB}{\Vt{B}}
+\newcommand{\VtC}{\Vt{C}}
+\newcommand{\VtD}{\Vt{D}}
+\newcommand{\VtE}{\Vt{E}}
+\newcommand{\VtF}{\Vt{F}}
+\newcommand{\VtG}{\Vt{G}}
+\newcommand{\VtH}{\Vt{H}}
+\newcommand{\VtI}{\Vt{I}}
+\newcommand{\VtJ}{\Vt{J}}
+\newcommand{\VtK}{\Vt{K}}
+\newcommand{\VtL}{\Vt{L}}
+\newcommand{\VtM}{\Vt{M}}
+\newcommand{\VtN}{\Vt{N}}
+\newcommand{\VtO}{\Vt{O}}
+\newcommand{\VtP}{\Vt{P}}
+\newcommand{\VtQ}{\Vt{Q}}
+\newcommand{\VtR}{\Vt{R}}
+\newcommand{\VtS}{\Vt{S}}
+\newcommand{\VtT}{\Vt{T}}
+\newcommand{\VtU}{\Vt{U}}
+\newcommand{\VtV}{\Vt{V}}
+\newcommand{\VtW}{\Vt{W}}
+\newcommand{\VtX}{\Vt{X}}
+\newcommand{\VtY}{\Vt{Y}}
+\newcommand{\VtZ}{\Vt{Z}}
+% ギリシャ小文字
+\newcommand{\Vtalpha}{\Vt{\alpha}}
+\newcommand{\Vtbeta}{\Vt{\beta}}
+\newcommand{\Vtgamma}{\Vt{\gamma}}
+\newcommand{\Vtdelta}{\Vt{\delta}}
+\newcommand{\Vtepsilon}{\Vt{\epsilon}}
+\newcommand{\Vtvarepsilon}{\Vt{\varepsilon}}
+\newcommand{\Vtzeta}{\Vt{\zeta}}
+\newcommand{\Vteta}{\Vt{\eta}}
+\newcommand{\Vttheta}{\Vt{\theta}}
+\newcommand{\Vtvartheta}{\Vt{\vartheta}}
+\newcommand{\Vtiota}{\Vt{\iota}}
+\newcommand{\Vtkappa}{\Vt{\kappa}}
+\newcommand{\Vtvarkappa}{\Vt{\varkappa}}
+\newcommand{\Vtlambda}{\Vt{\lambda}}
+\newcommand{\Vtmu}{\Vt{\mu}}
+\newcommand{\Vtnu}{\Vt{\nu}}
+\newcommand{\Vtxi}{\Vt{\xi}}
+\newcommand{\Vtpi}{\Vt{\pi}}
+\newcommand{\Vtvarpi}{\Vt{\varpi}}
+\newcommand{\Vtrho}{\Vt{\rho}}
+\newcommand{\Vtvarrho}{\Vt{\varrho}}
+\newcommand{\Vtsigma}{\Vt{\sigma}}
+\newcommand{\Vtvarsigma}{\Vt{\varsigma}}
+\newcommand{\Vttau}{\Vt{\tau}}
+\newcommand{\Vtupsilon}{\Vt{\upsilon}}
+\newcommand{\Vtphi}{\Vt{\phi}}
+\newcommand{\Vtvarphi}{\Vt{\varphi}}
+\newcommand{\Vtchi}{\Vt{\chi}}
+\newcommand{\Vtpsi}{\Vt{\psi}}
+\newcommand{\Vtomega}{\Vt{\omega}}
+\newcommand{\Vtdigamma}{\Vt{\digamma}}
+% ギリシャ大文字
+\newcommand{\VtGamma}{\Vt{\Gamma}}
+\newcommand{\VtvarGamma}{\Vt{\varGamma}}
+\newcommand{\VtDelta}{\Vt{\Delta}}
+\newcommand{\VtvarDelta}{\Vt{\varDelta}}
+\newcommand{\VtTheta}{\Vt{\Theta}}
+\newcommand{\VtvarTheta}{\Vt{\varTheta}}
+\newcommand{\VtLambda}{\Vt{\Lambda}}
+\newcommand{\VtvarLambda}{\Vt{\varLambda}}
+\newcommand{\VtXi}{\Vt{\Xi}}
+\newcommand{\VtvarXi}{\Vt{\varXi}}
+\newcommand{\VtPi}{\Vt{\Pi}}
+\newcommand{\VtvarPi}{\Vt{\varPi}}
+\newcommand{\VtSigma}{\Vt{\Sigma}}
+\newcommand{\VtvarSigma}{\Vt{\varSigma}}
+\newcommand{\VtUpsilon}{\Vt{\Upsilon}}
+\newcommand{\VtvarUpsilon}{\Vt{\varUpsilon}}
+\newcommand{\VtPhi}{\Vt{\Phi}}
+\newcommand{\VtvarPhi}{\Vt{\varPhi}}
+\newcommand{\VtPsi}{\Vt{\Psi}}
+\newcommand{\VtvarPsi}{\Vt{\varPsi}}
+\newcommand{\VtOmega}{\Vt{\Omega}}
+\newcommand{\VtvarOmega}{\Vt{\varOmega}}
+
+% ------------------------------------------------------------
+% ローマン体
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Rma}{\mathrm{a}}
+\newcommand{\Rmb}{\mathrm{b}}
+\newcommand{\Rmc}{\mathrm{c}}
+\newcommand{\Rmd}{\mathrm{d}}
+\newcommand{\Rme}{\mathrm{e}}
+\newcommand{\Rmf}{\mathrm{f}}
+\newcommand{\Rmg}{\mathrm{g}}
+\newcommand{\Rmh}{\mathrm{h}}
+\newcommand{\Rmi}{\mathrm{i}}
+\newcommand{\Rmj}{\mathrm{j}}
+\newcommand{\Rmk}{\mathrm{k}}
+\newcommand{\Rml}{\mathrm{l}}
+\newcommand{\Rmm}{\mathrm{m}}
+\newcommand{\Rmn}{\mathrm{n}}
+\newcommand{\Rmo}{\mathrm{o}}
+\newcommand{\Rmp}{\mathrm{p}}
+\newcommand{\Rmq}{\mathrm{q}}
+\newcommand{\Rmr}{\mathrm{r}}
+\newcommand{\Rms}{\mathrm{s}}
+\newcommand{\Rmt}{\mathrm{t}}
+\newcommand{\Rmu}{\mathrm{u}}
+\newcommand{\Rmv}{\mathrm{v}}
+\newcommand{\Rmw}{\mathrm{w}}
+\newcommand{\Rmx}{\mathrm{x}}
+\newcommand{\Rmy}{\mathrm{y}}
+\newcommand{\Rmz}{\mathrm{z}}
+% ラテン大文字
+\newcommand{\RmA}{\mathrm{A}}
+\newcommand{\RmB}{\mathrm{B}}
+\newcommand{\RmC}{\mathrm{C}}
+\newcommand{\RmD}{\mathrm{D}}
+\newcommand{\RmE}{\mathrm{E}}
+\newcommand{\RmF}{\mathrm{F}}
+\newcommand{\RmG}{\mathrm{G}}
+\newcommand{\RmH}{\mathrm{H}}
+\newcommand{\RmI}{\mathrm{I}}
+\newcommand{\RmJ}{\mathrm{J}}
+\newcommand{\RmK}{\mathrm{K}}
+\newcommand{\RmL}{\mathrm{L}}
+\newcommand{\RmM}{\mathrm{M}}
+\newcommand{\RmN}{\mathrm{N}}
+\newcommand{\RmO}{\mathrm{O}}
+\newcommand{\RmP}{\mathrm{P}}
+\newcommand{\RmQ}{\mathrm{Q}}
+\newcommand{\RmR}{\mathrm{R}}
+\newcommand{\RmS}{\mathrm{S}}
+\newcommand{\RmT}{\mathrm{T}}
+\newcommand{\RmU}{\mathrm{U}}
+\newcommand{\RmV}{\mathrm{V}}
+\newcommand{\RmW}{\mathrm{W}}
+\newcommand{\RmX}{\mathrm{X}}
+\newcommand{\RmY}{\mathrm{Y}}
+\newcommand{\RmZ}{\mathrm{Z}}
+
+% ------------------------------------------------------------
+% カリグラフィ体
+% ------------------------------------------------------------
+% ラテン大文字
+\newcommand{\ClA}{\mathcal{A}}
+\newcommand{\ClB}{\mathcal{B}}
+\newcommand{\ClC}{\mathcal{C}}
+\newcommand{\ClD}{\mathcal{D}}
+\newcommand{\ClE}{\mathcal{E}}
+\newcommand{\ClF}{\mathcal{F}}
+\newcommand{\ClG}{\mathcal{G}}
+\newcommand{\ClH}{\mathcal{H}}
+\newcommand{\ClI}{\mathcal{I}}
+\newcommand{\ClJ}{\mathcal{J}}
+\newcommand{\ClK}{\mathcal{K}}
+\newcommand{\ClL}{\mathcal{L}}
+\newcommand{\ClM}{\mathcal{M}}
+\newcommand{\ClN}{\mathcal{N}}
+\newcommand{\ClO}{\mathcal{O}}
+\newcommand{\ClP}{\mathcal{P}}
+\newcommand{\ClQ}{\mathcal{Q}}
+\newcommand{\ClR}{\mathcal{R}}
+\newcommand{\ClS}{\mathcal{S}}
+\newcommand{\ClT}{\mathcal{T}}
+\newcommand{\ClU}{\mathcal{U}}
+\newcommand{\ClV}{\mathcal{V}}
+\newcommand{\ClW}{\mathcal{W}}
+\newcommand{\ClX}{\mathcal{X}}
+\newcommand{\ClY}{\mathcal{Y}}
+\newcommand{\ClZ}{\mathcal{Z}}
+
+% ------------------------------------------------------------
+% 白抜き文字
+% ------------------------------------------------------------
+% ラテン大文字
+\newcommand{\BbA}{\mathbb{A}}
+\newcommand{\BbB}{\mathbb{B}}
+\newcommand{\BbC}{\mathbb{C}}
+\newcommand{\BbD}{\mathbb{D}}
+\newcommand{\BbE}{\mathbb{E}}
+\newcommand{\BbF}{\mathbb{F}}
+\newcommand{\BbG}{\mathbb{G}}
+\newcommand{\BbH}{\mathbb{H}}
+\newcommand{\BbI}{\mathbb{I}}
+\newcommand{\BbJ}{\mathbb{J}}
+\newcommand{\BbK}{\mathbb{K}}
+\newcommand{\BbL}{\mathbb{L}}
+\newcommand{\BbM}{\mathbb{M}}
+\newcommand{\BbN}{\mathbb{N}}
+\newcommand{\BbO}{\mathbb{O}}
+\newcommand{\BbP}{\mathbb{P}}
+\newcommand{\BbQ}{\mathbb{Q}}
+\newcommand{\BbR}{\mathbb{R}}
+\newcommand{\BbS}{\mathbb{S}}
+\newcommand{\BbT}{\mathbb{T}}
+\newcommand{\BbU}{\mathbb{U}}
+\newcommand{\BbV}{\mathbb{V}}
+\newcommand{\BbW}{\mathbb{W}}
+\newcommand{\BbX}{\mathbb{X}}
+\newcommand{\BbY}{\mathbb{Y}}
+\newcommand{\BbZ}{\mathbb{Z}}
+
+% ------------------------------------------------------------
+% mathfrak
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Fka}{\mathfrak{a}}
+\newcommand{\Fkb}{\mathfrak{b}}
+\newcommand{\Fkc}{\mathfrak{c}}
+\newcommand{\Fkd}{\mathfrak{d}}
+\newcommand{\Fke}{\mathfrak{e}}
+\newcommand{\Fkf}{\mathfrak{f}}
+\newcommand{\Fkg}{\mathfrak{g}}
+\newcommand{\Fkh}{\mathfrak{h}}
+\newcommand{\Fki}{\mathfrak{i}}
+\newcommand{\Fkj}{\mathfrak{j}}
+\newcommand{\Fkk}{\mathfrak{k}}
+\newcommand{\Fkl}{\mathfrak{l}}
+\newcommand{\Fkm}{\mathfrak{m}}
+\newcommand{\Fkn}{\mathfrak{n}}
+\newcommand{\Fko}{\mathfrak{o}}
+\newcommand{\Fkp}{\mathfrak{p}}
+\newcommand{\Fkq}{\mathfrak{q}}
+\newcommand{\Fkr}{\mathfrak{r}}
+\newcommand{\Fks}{\mathfrak{s}}
+\newcommand{\Fkt}{\mathfrak{t}}
+\newcommand{\Fku}{\mathfrak{u}}
+\newcommand{\Fkv}{\mathfrak{v}}
+\newcommand{\Fkw}{\mathfrak{w}}
+\newcommand{\Fkx}{\mathfrak{x}}
+\newcommand{\Fky}{\mathfrak{y}}
+\newcommand{\Fkz}{\mathfrak{z}}
+% ラテン大文字
+\newcommand{\FkA}{\mathfrak{A}}
+\newcommand{\FkB}{\mathfrak{B}}
+\newcommand{\FkC}{\mathfrak{C}}
+\newcommand{\FkD}{\mathfrak{D}}
+\newcommand{\FkE}{\mathfrak{E}}
+\newcommand{\FkF}{\mathfrak{F}}
+\newcommand{\FkG}{\mathfrak{G}}
+\newcommand{\FkH}{\mathfrak{H}}
+\newcommand{\FkI}{\mathfrak{I}}
+\newcommand{\FkJ}{\mathfrak{J}}
+\newcommand{\FkK}{\mathfrak{K}}
+\newcommand{\FkL}{\mathfrak{L}}
+\newcommand{\FkM}{\mathfrak{M}}
+\newcommand{\FkN}{\mathfrak{N}}
+\newcommand{\FkO}{\mathfrak{O}}
+\newcommand{\FkP}{\mathfrak{P}}
+\newcommand{\FkQ}{\mathfrak{Q}}
+\newcommand{\FkR}{\mathfrak{R}}
+\newcommand{\FkS}{\mathfrak{S}}
+\newcommand{\FkT}{\mathfrak{T}}
+\newcommand{\FkU}{\mathfrak{U}}
+\newcommand{\FkV}{\mathfrak{V}}
+\newcommand{\FkW}{\mathfrak{W}}
+\newcommand{\FkX}{\mathfrak{X}}
+\newcommand{\FkY}{\mathfrak{Y}}
+\newcommand{\FkZ}{\mathfrak{Z}}
+
+% ------------------------------------------------------------
+% ハット(^)つき
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Hta}{\hat{a}}
+\newcommand{\Htb}{\hat{b}}
+\newcommand{\Htc}{\hat{c}}
+\newcommand{\Htd}{\hat{d}}
+\newcommand{\Hte}{\hat{e}}
+\newcommand{\Htf}{\hat{f}}
+\newcommand{\Htg}{\hat{g}}
+\newcommand{\Hth}{\hat{h}}
+\newcommand{\Hti}{\hat{i}}
+\newcommand{\Htj}{\hat{j}}
+\newcommand{\Htk}{\hat{k}}
+\newcommand{\Htl}{\hat{l}}
+\newcommand{\Htm}{\hat{m}}
+\newcommand{\Htn}{\hat{n}}
+\newcommand{\Hto}{\hat{o}}
+\newcommand{\Htp}{\hat{p}}
+\newcommand{\Htq}{\hat{q}}
+\newcommand{\Htr}{\hat{r}}
+\newcommand{\Hts}{\hat{s}}
+\newcommand{\Htt}{\hat{t}}
+\newcommand{\Htu}{\hat{u}}
+\newcommand{\Htv}{\hat{v}}
+\newcommand{\Htw}{\hat{w}}
+\newcommand{\Htx}{\hat{x}}
+\newcommand{\Hty}{\hat{y}}
+\newcommand{\Htz}{\hat{z}}
+% ラテン大文字
+\newcommand{\HtA}{\hat{A}}
+\newcommand{\HtB}{\hat{B}}
+\newcommand{\HtC}{\hat{C}}
+\newcommand{\HtD}{\hat{D}}
+\newcommand{\HtE}{\hat{E}}
+\newcommand{\HtF}{\hat{F}}
+\newcommand{\HtG}{\hat{G}}
+\newcommand{\HtH}{\hat{H}}
+\newcommand{\HtI}{\hat{I}}
+\newcommand{\HtJ}{\hat{J}}
+\newcommand{\HtK}{\hat{K}}
+\newcommand{\HtL}{\hat{L}}
+\newcommand{\HtM}{\hat{M}}
+\newcommand{\HtN}{\hat{N}}
+\newcommand{\HtO}{\hat{O}}
+\newcommand{\HtP}{\hat{P}}
+\newcommand{\HtQ}{\hat{Q}}
+\newcommand{\HtR}{\hat{R}}
+\newcommand{\HtS}{\hat{S}}
+\newcommand{\HtT}{\hat{T}}
+\newcommand{\HtU}{\hat{U}}
+\newcommand{\HtV}{\hat{V}}
+\newcommand{\HtW}{\hat{W}}
+\newcommand{\HtX}{\hat{X}}
+\newcommand{\HtY}{\hat{Y}}
+\newcommand{\HtZ}{\hat{Z}}
+% ギリシャ小文字
+\newcommand{\Htalpha}{\hat{\alpha}}
+\newcommand{\Htbeta}{\hat{\beta}}
+\newcommand{\Htgamma}{\hat{\gamma}}
+\newcommand{\Htdelta}{\hat{\delta}}
+\newcommand{\Htepsilon}{\hat{\epsilon}}
+\newcommand{\Htvarepsilon}{\hat{\varepsilon}}
+\newcommand{\Htzeta}{\hat{\zeta}}
+\newcommand{\Hteta}{\hat{\eta}}
+\newcommand{\Httheta}{\hat{\theta}}
+\newcommand{\Htvartheta}{\hat{\vartheta}}
+\newcommand{\Htiota}{\hat{\iota}}
+\newcommand{\Htkappa}{\hat{\kappa}}
+\newcommand{\Htvarkappa}{\hat{\varkappa}}
+\newcommand{\Htlambda}{\hat{\lambda}}
+\newcommand{\Htmu}{\hat{\mu}}
+\newcommand{\Htnu}{\hat{\nu}}
+\newcommand{\Htxi}{\hat{\xi}}
+\newcommand{\Htpi}{\hat{\pi}}
+\newcommand{\Htvarpi}{\hat{\varpi}}
+\newcommand{\Htrho}{\hat{\rho}}
+\newcommand{\Htvarrho}{\hat{\varrho}}
+\newcommand{\Htsigma}{\hat{\sigma}}
+\newcommand{\Htvarsigma}{\hat{\varsigma}}
+\newcommand{\Httau}{\hat{\tau}}
+\newcommand{\Htupsilon}{\hat{\upsilon}}
+\newcommand{\Htphi}{\hat{\phi}}
+\newcommand{\Htvarphi}{\hat{\varphi}}
+\newcommand{\Htchi}{\hat{\chi}}
+\newcommand{\Htpsi}{\hat{\psi}}
+\newcommand{\Htomega}{\hat{\omega}}
+\newcommand{\Htdigamma}{\hat{\digamma}}
+% ギリシャ大文字
+\newcommand{\HtGamma}{\hat{\Gamma}}
+\newcommand{\HtvarGamma}{\hat{\varGamma}}
+\newcommand{\HtDelta}{\hat{\Delta}}
+\newcommand{\HtvarDelta}{\hat{\varDelta}}
+\newcommand{\HtTheta}{\hat{\Theta}}
+\newcommand{\HtvarTheta}{\hat{\varTheta}}
+\newcommand{\HtLambda}{\hat{\Lambda}}
+\newcommand{\HtvarLambda}{\hat{\varLambda}}
+\newcommand{\HtXi}{\hat{\Xi}}
+\newcommand{\HtvarXi}{\hat{\varXi}}
+\newcommand{\HtPi}{\hat{\Pi}}
+\newcommand{\HtvarPi}{\hat{\varPi}}
+\newcommand{\HtSigma}{\hat{\Sigma}}
+\newcommand{\HtvarSigma}{\hat{\varSigma}}
+\newcommand{\HtUpsilon}{\hat{\Upsilon}}
+\newcommand{\HtvarUpsilon}{\hat{\varUpsilon}}
+\newcommand{\HtPhi}{\hat{\Phi}}
+\newcommand{\HtvarPhi}{\hat{\varPhi}}
+\newcommand{\HtPsi}{\hat{\Psi}}
+\newcommand{\HtvarPsi}{\hat{\varPsi}}
+\newcommand{\HtOmega}{\hat{\Omega}}
+\newcommand{\HtvarOmega}{\hat{\varOmega}}
+
+% ------------------------------------------------------------
+% バー(-)つき文字
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Bra}{\bar{a}}
+\newcommand{\Brb}{\bar{b}}
+\newcommand{\Brc}{\bar{c}}
+\newcommand{\Brd}{\bar{d}}
+\newcommand{\Bre}{\bar{e}}
+\newcommand{\Brf}{\bar{f}}
+\newcommand{\Brg}{\bar{g}}
+\newcommand{\Brh}{\bar{h}}
+\newcommand{\Bri}{\bar{i}}
+\newcommand{\Brj}{\bar{j}}
+\newcommand{\Brk}{\bar{k}}
+\newcommand{\Brl}{\bar{l}}
+\newcommand{\Brm}{\bar{m}}
+\newcommand{\Brn}{\bar{n}}
+\newcommand{\Bro}{\bar{o}}
+\newcommand{\Brp}{\bar{p}}
+\newcommand{\Brq}{\bar{q}}
+\newcommand{\Brr}{\bar{r}}
+\newcommand{\Brs}{\bar{s}}
+\newcommand{\Brt}{\bar{t}}
+\newcommand{\Bru}{\bar{u}}
+\newcommand{\Brv}{\bar{v}}
+\newcommand{\Brw}{\bar{w}}
+\newcommand{\Brx}{\bar{x}}
+\newcommand{\Bry}{\bar{y}}
+\newcommand{\Brz}{\bar{z}}
+% ラテン大文字
+\newcommand{\BrA}{\bar{A}}
+\newcommand{\BrB}{\bar{B}}
+\newcommand{\BrC}{\bar{C}}
+\newcommand{\BrD}{\bar{D}}
+\newcommand{\BrE}{\bar{E}}
+\newcommand{\BrF}{\bar{F}}
+\newcommand{\BrG}{\bar{G}}
+\newcommand{\BrH}{\bar{H}}
+\newcommand{\BrI}{\bar{I}}
+\newcommand{\BrJ}{\bar{J}}
+\newcommand{\BrK}{\bar{K}}
+\newcommand{\BrL}{\bar{L}}
+\newcommand{\BrM}{\bar{M}}
+\newcommand{\BrN}{\bar{N}}
+\newcommand{\BrO}{\bar{O}}
+\newcommand{\BrP}{\bar{P}}
+\newcommand{\BrQ}{\bar{Q}}
+\newcommand{\BrR}{\bar{R}}
+\newcommand{\BrS}{\bar{S}}
+\newcommand{\BrT}{\bar{T}}
+\newcommand{\BrU}{\bar{U}}
+\newcommand{\BrV}{\bar{V}}
+\newcommand{\BrW}{\bar{W}}
+\newcommand{\BrX}{\bar{X}}
+\newcommand{\BrY}{\bar{Y}}
+\newcommand{\BrZ}{\bar{Z}}
+% ギリシャ小文字
+\newcommand{\Bralpha}{\bar{\alpha}}
+\newcommand{\Brbeta}{\bar{\beta}}
+\newcommand{\Brgamma}{\bar{\gamma}}
+\newcommand{\Brdelta}{\bar{\delta}}
+\newcommand{\Brepsilon}{\bar{\epsilon}}
+\newcommand{\Brvarepsilon}{\bar{\varepsilon}}
+\newcommand{\Brzeta}{\bar{\zeta}}
+\newcommand{\Breta}{\bar{\eta}}
+\newcommand{\Brtheta}{\bar{\theta}}
+\newcommand{\Brvartheta}{\bar{\vartheta}}
+\newcommand{\Briota}{\bar{\iota}}
+\newcommand{\Brkappa}{\bar{\kappa}}
+\newcommand{\Brvarkappa}{\bar{\varkappa}}
+\newcommand{\Brlambda}{\bar{\lambda}}
+\newcommand{\Brmu}{\bar{\mu}}
+\newcommand{\Brnu}{\bar{\nu}}
+\newcommand{\Brxi}{\bar{\xi}}
+\newcommand{\Brpi}{\bar{\pi}}
+\newcommand{\Brvarpi}{\bar{\varpi}}
+\newcommand{\Brrho}{\bar{\rho}}
+\newcommand{\Brvarrho}{\bar{\varrho}}
+\newcommand{\Brsigma}{\bar{\sigma}}
+\newcommand{\Brvarsigma}{\bar{\varsigma}}
+\newcommand{\Brtau}{\bar{\tau}}
+\newcommand{\Brupsilon}{\bar{\upsilon}}
+\newcommand{\Brphi}{\bar{\phi}}
+\newcommand{\Brvarphi}{\bar{\varphi}}
+\newcommand{\Brchi}{\bar{\chi}}
+\newcommand{\Brpsi}{\bar{\psi}}
+\newcommand{\Bromega}{\bar{\omega}}
+\newcommand{\Brdigamma}{\bar{\digamma}}
+% ギリシャ大文字
+\newcommand{\BrGamma}{\bar{\Gamma}}
+\newcommand{\BrvarGamma}{\bar{\varGamma}}
+\newcommand{\BrDelta}{\bar{\Delta}}
+\newcommand{\BrvarDelta}{\bar{\varDelta}}
+\newcommand{\BrTheta}{\bar{\Theta}}
+\newcommand{\BrvarTheta}{\bar{\varTheta}}
+\newcommand{\BrLambda}{\bar{\Lambda}}
+\newcommand{\BrvarLambda}{\bar{\varLambda}}
+\newcommand{\BrXi}{\bar{\Xi}}
+\newcommand{\BrvarXi}{\bar{\varXi}}
+\newcommand{\BrPi}{\bar{\Pi}}
+\newcommand{\BrvarPi}{\bar{\varPi}}
+\newcommand{\BrSigma}{\bar{\Sigma}}
+\newcommand{\BrvarSigma}{\bar{\varSigma}}
+\newcommand{\BrUpsilon}{\bar{\Upsilon}}
+\newcommand{\BrvarUpsilon}{\bar{\varUpsilon}}
+\newcommand{\BrPhi}{\bar{\Phi}}
+\newcommand{\BrvarPhi}{\bar{\varPhi}}
+\newcommand{\BrPsi}{\bar{\Psi}}
+\newcommand{\BrvarPsi}{\bar{\varPsi}}
+\newcommand{\BrOmega}{\bar{\Omega}}
+\newcommand{\BrvarOmega}{\bar{\varOmega}}
+
+% ------------------------------------------------------------
+% チルダ(~)つき文字
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Tla}{\tilde{a}}
+\newcommand{\Tlb}{\tilde{b}}
+\newcommand{\Tlc}{\tilde{c}}
+\newcommand{\Tld}{\tilde{d}}
+\newcommand{\Tle}{\tilde{e}}
+\newcommand{\Tlf}{\tilde{f}}
+\newcommand{\Tlg}{\tilde{g}}
+\newcommand{\Tlh}{\tilde{h}}
+\newcommand{\Tli}{\tilde{i}}
+\newcommand{\Tlj}{\tilde{j}}
+\newcommand{\Tlk}{\tilde{k}}
+\newcommand{\Tll}{\tilde{l}}
+\newcommand{\Tlm}{\tilde{m}}
+\newcommand{\Tln}{\tilde{n}}
+\newcommand{\Tlo}{\tilde{o}}
+\newcommand{\Tlp}{\tilde{p}}
+\newcommand{\Tlq}{\tilde{q}}
+\newcommand{\Tlr}{\tilde{r}}
+\newcommand{\Tls}{\tilde{s}}
+\newcommand{\Tlt}{\tilde{t}}
+\newcommand{\Tlu}{\tilde{u}}
+\newcommand{\Tlv}{\tilde{v}}
+\newcommand{\Tlw}{\tilde{w}}
+\newcommand{\Tlx}{\tilde{x}}
+\newcommand{\Tly}{\tilde{y}}
+\newcommand{\Tlz}{\tilde{z}}
+% ラテン大文字
+\newcommand{\TlA}{\tilde{A}}
+\newcommand{\TlB}{\tilde{B}}
+\newcommand{\TlC}{\tilde{C}}
+\newcommand{\TlD}{\tilde{D}}
+\newcommand{\TlE}{\tilde{E}}
+\newcommand{\TlF}{\tilde{F}}
+\newcommand{\TlG}{\tilde{G}}
+\newcommand{\TlH}{\tilde{H}}
+\newcommand{\TlI}{\tilde{I}}
+\newcommand{\TlJ}{\tilde{J}}
+\newcommand{\TlK}{\tilde{K}}
+\newcommand{\TlL}{\tilde{L}}
+\newcommand{\TlM}{\tilde{M}}
+\newcommand{\TlN}{\tilde{N}}
+\newcommand{\TlO}{\tilde{O}}
+\newcommand{\TlP}{\tilde{P}}
+\newcommand{\TlQ}{\tilde{Q}}
+\newcommand{\TlR}{\tilde{R}}
+\newcommand{\TlS}{\tilde{S}}
+\newcommand{\TlT}{\tilde{T}}
+\newcommand{\TlU}{\tilde{U}}
+\newcommand{\TlV}{\tilde{V}}
+\newcommand{\TlW}{\tilde{W}}
+\newcommand{\TlX}{\tilde{X}}
+\newcommand{\TlY}{\tilde{Y}}
+\newcommand{\TlZ}{\tilde{Z}}
+% ギリシャ小文字
+\newcommand{\Tlalpha}{\tilde{\alpha}}
+\newcommand{\Tlbeta}{\tilde{\beta}}
+\newcommand{\Tlgamma}{\tilde{\gamma}}
+\newcommand{\Tldelta}{\tilde{\delta}}
+\newcommand{\Tlepsilon}{\tilde{\epsilon}}
+\newcommand{\Tlvarepsilon}{\tilde{\varepsilon}}
+\newcommand{\Tlzeta}{\tilde{\zeta}}
+\newcommand{\Tleta}{\tilde{\eta}}
+\newcommand{\Tltheta}{\tilde{\theta}}
+\newcommand{\Tlvartheta}{\tilde{\vartheta}}
+\newcommand{\Tliota}{\tilde{\iota}}
+\newcommand{\Tlkappa}{\tilde{\kappa}}
+\newcommand{\Tlvarkappa}{\tilde{\varkappa}}
+\newcommand{\Tllambda}{\tilde{\lambda}}
+\newcommand{\Tlmu}{\tilde{\mu}}
+\newcommand{\Tlnu}{\tilde{\nu}}
+\newcommand{\Tlxi}{\tilde{\xi}}
+\newcommand{\Tlpi}{\tilde{\pi}}
+\newcommand{\Tlvarpi}{\tilde{\varpi}}
+\newcommand{\Tlrho}{\tilde{\rho}}
+\newcommand{\Tlvarrho}{\tilde{\varrho}}
+\newcommand{\Tlsigma}{\tilde{\sigma}}
+\newcommand{\Tlvarsigma}{\tilde{\varsigma}}
+\newcommand{\Tltau}{\tilde{\tau}}
+\newcommand{\Tlupsilon}{\tilde{\upsilon}}
+\newcommand{\Tlphi}{\tilde{\phi}}
+\newcommand{\Tlvarphi}{\tilde{\varphi}}
+\newcommand{\Tlchi}{\tilde{\chi}}
+\newcommand{\Tlpsi}{\tilde{\psi}}
+\newcommand{\Tlomega}{\tilde{\omega}}
+\newcommand{\Tldigamma}{\tilde{\digamma}}
+% ギリシャ大文字
+\newcommand{\TlGamma}{\tilde{\Gamma}}
+\newcommand{\TlvarGamma}{\tilde{\varGamma}}
+\newcommand{\TlDelta}{\tilde{\Delta}}
+\newcommand{\TlvarDelta}{\tilde{\varDelta}}
+\newcommand{\TlTheta}{\tilde{\Theta}}
+\newcommand{\TlvarTheta}{\tilde{\varTheta}}
+\newcommand{\TlLambda}{\tilde{\Lambda}}
+\newcommand{\TlvarLambda}{\tilde{\varLambda}}
+\newcommand{\TlXi}{\tilde{\Xi}}
+\newcommand{\TlvarXi}{\tilde{\varXi}}
+\newcommand{\TlPi}{\tilde{\Pi}}
+\newcommand{\TlvarPi}{\tilde{\varPi}}
+\newcommand{\TlSigma}{\tilde{\Sigma}}
+\newcommand{\TlvarSigma}{\tilde{\varSigma}}
+\newcommand{\TlUpsilon}{\tilde{\Upsilon}}
+\newcommand{\TlvarUpsilon}{\tilde{\varUpsilon}}
+\newcommand{\TlPhi}{\tilde{\Phi}}
+\newcommand{\TlvarPhi}{\tilde{\varPhi}}
+\newcommand{\TlPsi}{\tilde{\Psi}}
+\newcommand{\TlvarPsi}{\tilde{\varPsi}}
+\newcommand{\TlOmega}{\tilde{\Omega}}
+\newcommand{\TlvarOmega}{\tilde{\varOmega}}
+
+
+% ------------------------------------------------------------
+% ドット(.)つき文字
+% ------------------------------------------------------------
+% ラテン小文字
+\newcommand{\Dta}{\dot{a}}
+\newcommand{\Dtb}{\dot{b}}
+\newcommand{\Dtc}{\dot{c}}
+\newcommand{\Dtd}{\dot{d}}
+\newcommand{\Dte}{\dot{e}}
+\newcommand{\Dtf}{\dot{f}}
+\newcommand{\Dtg}{\dot{g}}
+\newcommand{\Dth}{\dot{h}}
+\newcommand{\Dti}{\dot{i}}
+\newcommand{\Dtj}{\dot{j}}
+\newcommand{\Dtk}{\dot{k}}
+\newcommand{\Dtl}{\dot{l}}
+\newcommand{\Dtm}{\dot{m}}
+\newcommand{\Dtn}{\dot{n}}
+\newcommand{\Dto}{\dot{o}}
+\newcommand{\Dtp}{\dot{p}}
+\newcommand{\Dtq}{\dot{q}}
+\newcommand{\Dtr}{\dot{r}}
+\newcommand{\Dts}{\dot{s}}
+\newcommand{\Dtt}{\dot{t}}
+\newcommand{\Dtu}{\dot{u}}
+\newcommand{\Dtv}{\dot{v}}
+\newcommand{\Dtw}{\dot{w}}
+\newcommand{\Dtx}{\dot{x}}
+\newcommand{\Dty}{\dot{y}}
+\newcommand{\Dtz}{\dot{z}}
+% ラテン大文字
+\newcommand{\DtA}{\dot{A}}
+\newcommand{\DtB}{\dot{B}}
+\newcommand{\DtC}{\dot{C}}
+\newcommand{\DtD}{\dot{D}}
+\newcommand{\DtE}{\dot{E}}
+\newcommand{\DtF}{\dot{F}}
+\newcommand{\DtG}{\dot{G}}
+\newcommand{\DtH}{\dot{H}}
+\newcommand{\DtI}{\dot{I}}
+\newcommand{\DtJ}{\dot{J}}
+\newcommand{\DtK}{\dot{K}}
+\newcommand{\DtL}{\dot{L}}
+\newcommand{\DtM}{\dot{M}}
+\newcommand{\DtN}{\dot{N}}
+\newcommand{\DtO}{\dot{O}}
+\newcommand{\DtP}{\dot{P}}
+\newcommand{\DtQ}{\dot{Q}}
+\newcommand{\DtR}{\dot{R}}
+\newcommand{\DtS}{\dot{S}}
+\newcommand{\DtT}{\dot{T}}
+\newcommand{\DtU}{\dot{U}}
+\newcommand{\DtV}{\dot{V}}
+\newcommand{\DtW}{\dot{W}}
+\newcommand{\DtX}{\dot{X}}
+\newcommand{\DtY}{\dot{Y}}
+\newcommand{\DtZ}{\dot{Z}}
+% ギリシャ小文字
+\newcommand{\Dtalpha}{\dot{\alpha}}
+\newcommand{\Dtbeta}{\dot{\beta}}
+\newcommand{\Dtgamma}{\dot{\gamma}}
+\newcommand{\Dtdelta}{\dot{\delta}}
+\newcommand{\Dtepsilon}{\dot{\epsilon}}
+\newcommand{\Dtvarepsilon}{\dot{\varepsilon}}
+\newcommand{\Dtzeta}{\dot{\zeta}}
+\newcommand{\Dteta}{\dot{\eta}}
+\newcommand{\Dttheta}{\dot{\theta}}
+\newcommand{\Dtvartheta}{\dot{\vartheta}}
+\newcommand{\Dtiota}{\dot{\iota}}
+\newcommand{\Dtkappa}{\dot{\kappa}}
+\newcommand{\Dtvarkappa}{\dot{\varkappa}}
+\newcommand{\Dtlambda}{\dot{\lambda}}
+\newcommand{\Dtmu}{\dot{\mu}}
+\newcommand{\Dtnu}{\dot{\nu}}
+\newcommand{\Dtxi}{\dot{\xi}}
+\newcommand{\Dtpi}{\dot{\pi}}
+\newcommand{\Dtvarpi}{\dot{\varpi}}
+\newcommand{\Dtrho}{\dot{\rho}}
+\newcommand{\Dtvarrho}{\dot{\varrho}}
+\newcommand{\Dtsigma}{\dot{\sigma}}
+\newcommand{\Dtvarsigma}{\dot{\varsigma}}
+\newcommand{\Dttau}{\dot{\tau}}
+\newcommand{\Dtupsilon}{\dot{\upsilon}}
+\newcommand{\Dtphi}{\dot{\phi}}
+\newcommand{\Dtvarphi}{\dot{\varphi}}
+\newcommand{\Dtchi}{\dot{\chi}}
+\newcommand{\Dtpsi}{\dot{\psi}}
+\newcommand{\Dtomega}{\dot{\omega}}
+\newcommand{\Dtdigamma}{\dot{\digamma}}
+% ギリシャ大文字
+\newcommand{\DtGamma}{\dot{\Gamma}}
+\newcommand{\DtvarGamma}{\dot{\varGamma}}
+\newcommand{\DtDelta}{\dot{\Delta}}
+\newcommand{\DtvarDelta}{\dot{\varDelta}}
+\newcommand{\DtTheta}{\dot{\Theta}}
+\newcommand{\DtvarTheta}{\dot{\varTheta}}
+\newcommand{\DtLambda}{\dot{\Lambda}}
+\newcommand{\DtvarLambda}{\dot{\varLambda}}
+\newcommand{\DtXi}{\dot{\Xi}}
+\newcommand{\DtvarXi}{\dot{\varXi}}
+\newcommand{\DtPi}{\dot{\Pi}}
+\newcommand{\DtvarPi}{\dot{\varPi}}
+\newcommand{\DtSigma}{\dot{\Sigma}}
+\newcommand{\DtvarSigma}{\dot{\varSigma}}
+\newcommand{\DtUpsilon}{\dot{\Upsilon}}
+\newcommand{\DtvarUpsilon}{\dot{\varUpsilon}}
+\newcommand{\DtPhi}{\dot{\Phi}}
+\newcommand{\DtvarPhi}{\dot{\varPhi}}
+\newcommand{\DtPsi}{\dot{\Psi}}
+\newcommand{\DtvarPsi}{\dot{\varPsi}}
+\newcommand{\DtOmega}{\dot{\Omega}}
+\newcommand{\DtvarOmega}{\dot{\varOmega}}
+

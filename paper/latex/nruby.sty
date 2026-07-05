@@ -1,0 +1,290 @@
+%   nruby.sty	(NAIST ruby macro)
+%	version 1.1	1993-12-25
+%	version 2.0	1994-02-13
+%		by T.Ogihara	ogihara@itc.aist-nara.ac.jp
+%
+%   Usage: \ruby{word}{ruby}
+
+\typeout{`nruby' V.2.0 <13 Dec 93> by T.Ogihara.}
+
+\def\rubysize{\tiny}
+
+\def\ruby#1#2{\leavevmode{%
+\setbox1=\hbox{#1}\setbox2=\hbox{\rubysize#2}%
+\ifdim\wd1>\wd2\setbox2=\hbox to\wd1{\rubysize\sparse{#2}}%
+\else\ifdim\wd1<\wd2\setbox1=\hbox to\wd2{\sparse{#1}}\fi%
+\fi%
+\vbox{\baselineskip.1em\hrule height.3em width0pt depth0pt\box2\box1}}}
+
+% English mode was deleted (Ver.2.0).
+
+\let\rubie\ruby
+
+% To use '@' as ruby macro, you must use \useruby first.
+%   Usage: @word(ruby)
+
+\def\rubii#1(#2){\ruby{#1}{#2}}
+\let\dospecialsorig\dospecials
+\def\mydospecials{\def\dospecials{\dospecialsorig\makeatother}}
+\catcode`\@=\active
+\def\useruby{\mydospecials\catcode`\@=\active\let@=\rubii}
+\catcode`\@=11
+\def\nouseruby{\makeatother\let\dospecials\dospecialsorig}
+\let\userubie\useruby
+\let\nouserubie\nouseruby
+
+
+% \boten adds emphasizing dots on each character.
+%   Usage: \boten@TEXT@
+%	where '@' can be any char.
+
+\def\boten#1{\let\do@next=\boten@tail\let\endtail=#1\boten@tail}
+\def\boten@tail#1#2{\setbox1=\hbox{#1}%
+\vbox{\baselineskip.1em\hrule height.3em width0pt depth0pt%
+\hbox to\wd1{\hfil\rubysize$\bullet$\hfil}\box1}%
+\penalty\hyphenpenalty\if\endtail#2\let\do@next=\feed@One\fi\do@next#2}
+\def\feed@One#1{\relax}
+
+%	sparse
+%	Usage1: \sparse[20mm]{TEXT}
+%	Usage2: \sparse*[20mm]{TEXT}
+%	Usage3: \sparse{TEXT}  or  \sparse*{TEXT}
+%
+\def\sparselist#1{\hfill\let\do@next=\do@tail\let\endtail=#1\do@tail}
+\def\do@tail#1#2{#1%
+  \if\endtail#2\let\do@next=\feed@one\else\hfill\fi\do@next#2}
+\def\feed@one#1{\hfill}
+
+\def\sparseList#1{\let\do@next=\do@Tail\let\endtail=#1\do@Tail}
+\def\do@Tail#1#2{#1%
+  \if\endtail#2\let\do@next=\feed@One\else\hfill\fi\do@next#2}
+% \def\feed@One#1{\relax}
+%
+% Thanx to Iwakuma & Furukawa
+%
+\def\sparse{\@ifstar{\let\sparse@skip\relax\@sparse}
+{\let\sparse@skip\hss\@sparse}}
+\def\@sparse{\@ifnextchar [{\bx@sparse}{\op@sparse}}
+\def\bx@sparse[#1]#2{\hbox to#1{\op@sparse{#2}}}
+\def\op@sparse#1{\sparse@skip%
+ \@ifundefined{jintercharskip}{%
+ \kanjiskip=0pt plus 1fil\xkanjiskip=\kanjiskip #1}{%
+ \jintercharskip=0pt plus 1fil\jasciikanjiskip=\jintercharskip #1}\sparse@skip}
+%
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% MANUAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentstyle[nruby]{jarticle}
+
+\setlength{\textheight}{244mm}
+\setlength{\textwidth}{164mm}
+\voffset-15mm
+\hoffset-20mm
+
+\begin{document}
+
+\centerline{\Large\bf nruby.sty (Ver.2.0) Ìg¢û}
+\rightline{1994-02-13 ¬´u}
+\rightline{\tt ogihara@itc.aist-nara.ac.jp}
+
+\vskip5mm
+
+nruby.sty ÍA\ruby{¶Í}{Ôñµå¤¿ã¤}ÉrðÓé½ßÌ}NÅ·B
+\boten+T_+ðÂ¯é@\àñµÜ·BÜ½AIÈ@\ÉÈèÜ·ªA
+¶ÌÔÉKÉÔuð ¯Ä\sparse[35mm]{Ïzu}·é
+@\àpÅ«Ü·B
+
+±ÌeLXg©Ìª}NÌpáÉÈÁÄ¢Ü·ÌÅQlÉµÄº³¢B
+
+\section{r}
+rðÓéÉÍAÈºÌ`®Ì}Nð¶ÍÉßñÅ¨«Ü·B
+
+\begin{verbatim}
+    \ruby{ê}{æÝªÈ}
+\end{verbatim}
+
+êÌªAæÝªÈÌªÉÍAÆàÉÊíÌeLXgªLqÅ«Ü·B
+êÌªAæÝªÈÌªÌÇ¿ç©ª·­ÈÁ½ÉÍAZ¢ûÍKÉ
+óª}ü³êÄÏzu³êÜ·Bá¦ÎA
+\ruby{rÌûª·¢á}{rÌÙ¤ªPêæèà¸ÁÆÈª¢Î ¢Ìá}A
+\ruby{rÌûªZ¢á}{rªZ¢á}Ìæ¤ÉÈèÜ·B
+
+p¶ðrÆµÄg¤±ÆàÅ«Ü·BÏzuÉæÁÄ¶ÌÔÉóª
+üé±ÆÍ èÜ¹ñBá¦ÎA
+w\ruby{ß¿ÄüÞéÉÍÎ©é±ÆÈ©ê}
+{It is never too late to mend.}xÌæ¤ÉÈèÜ·B
+
+\subsection*{Ó_}
+
+\verb+\ruby+}NÌgpÉÛµÄÍAÈºÌ_ÉÓµÄº³¢B
+\begin{itemize}
+\item rÌ¶Ìå«³Í \verb+\tiny+ ÉÅè³êÄ¢Ü·B
+    ±êÍA¶Ì¶Ìå«³ðÏXµÄàÏ»µÜ¹ñB]ÁÄA
+    ©oµârÉ±Ì}Nðp¢éÆoXª«­ÈèÜ·B
+\item  \verb+\ruby{ê}{æÝªÈ}+ ÅÐÆÂÌå«È¶Ìæ¤É
+    U¢Ü·B]ÁÄAsÉ«½Æ«ÉêÌÌKÈÆ±ëÅüs
+    ·éÆ¢¤±ÆªÅ«Ü¹ñB
+\end{itemize}
+
+\subsection*{g£@\ --- rð½­³ñg¢½¢}
+
+\verb+\useruby+ Æ¢¤}NðÀs³¹éÆA»êÈ~A
+\verb+\ruby{ê}{æÝªÈ}+ Æ­ÌÆS­¯¶±ÆðA
+\begin{verbatim}
+    @ê(æÝªÈ)
+\end{verbatim}
+Æ¢¤`®ÅsÈ¤±ÆªÅ«éæ¤ÉÈèÜ·BÊÍ¼pÅA
+æÝªÈÉÍÊðÜßé±ÆÍÅ«Ü¹ñB
+
+\useruby %%% @`®ðg¤(ruby)
+
+@êÌªÍ©Èè·­Äàåäv(±êÍuêÌ...åävvðêÆµ½áÅ·)
+Å·ªAóâüsAÁêLðÜßé±ÆÍÅ«Ü¹ñB
+\verb+\useruby+ ÌøÊð@æèÁ·(disable)ÉÍA
+\verb+\nouseruby+ Æ¢¤}NðÀsµÜ·B
+
+½¾µA\verb+@+ðÁêÈ¶ÆµÄè`µÜ·ÌÅA¶ÍÉ\verb+@+ð
+u¯È­ÈèÜ·(dq[ÌAhXÈÇÉÓ)B
+{\tt verbatim}Â«ÅÍoÍÅ«Ü·B
+Ü½A¼Ì}NÈÇÅ
+\verb+@+É½©Ìðð^¦ÄgÁÄ¢éêÉÍ»¿çÌ@\ªp
+Å«È­ÈéÈÇÌe¿ªoé±Æª èÜ·B
+
+\nouseruby %%% @`®ðgíÈ¢
+
+
+\section{T_}
+
+¶ÌÁèÌªÉT_ðÂ¯éÉÍAÌæ¤ÉµÜ·B
+
+\begin{verbatim}
+    \boten+eLXg+
+\end{verbatim}
+
+½¾µ±±ÅA\verb@+@ÍAeLXgÉÜÜêÈ¢CÓÌ¶ÆµÜ·B
+]ÁÄAá¦ÎA\verb!\boten@eLXg@! Åà¢¢í¯Å·B
+eLXgªÍA¡ÌsÉÜ½ªé±ÆªÅ«Ü·B
+
+\subsection*{Ó_}
+
+\verb+\boten+}NÌgpÉÛµÄÍAÈºÌ_ÉÓµÄº³¢B
+\begin{itemize}
+\item eLXgÌªÉÍA}NÈÇðwèÅ«Ü¹ñBK¸½¶Å
+	wè·éKvª èÜ·B
+\item T_Ìå«³Í \verb+\tiny+ ÉÅè³êÄ¢Ü·B
+    ±êÍA¶Ì¶Ìå«³ðÏXµÄàÏ»µÜ¹ñB]ÁÄA
+    ©oµârÉ±Ì}Nðp¢éÆoXª«­ÈèÜ·B
+\item T_Íî{IÉú{êÌ¶ÍÉt¯é±ÆðzèµÄ¢Ü·B
+    ]ÁÄA\boten+p¶(Like This)ðÜÞæ¤È¶+ÅÍT_ªsµ¢É
+    ÈèÜ·B
+\end{itemize}
+
+
+\section{Ïzu}
+
+wèµ½¶ñAá¦Îu\sparse[40mm]{eLXg}vÆ¢¤
+¶ð40mmÌÉÏzu·é±ÆªÅ«Ü·B
+ÏzuÌû@ÍAwèµ½¶ñÌÅÆÅãÉàóðüêéû@ÆA
+u\sparse*[40mm]{eLXg}vÌæ¤ÉóÍüêÈ¢û@ª
+wèÅ«Ü·B
+
+ÏzuÍA\verb+\sparse+ Æ¢¤}NÅwèµÜ·B
+á¦ÎãÌáÍ»ê¼êA
+
+\begin{verbatim}
+    \sparse[40mm]{eLXg}
+    \sparse*[40mm]{eLXg}
+\end{verbatim}
+
+Ìæ¤ÉµÄ¢Ü·B
+
+È¨AÏzu³ê½¶ñSÌ({bNX)ÍÐÆÂÌå«È¶Ìæ¤É
+U¢Ü·B]ÁÄAsÉ«½Æ«ÉêÌÌKÈÆ±ëÅüs
+·éÆ¢¤±ÆªÅ«Ü¹ñB
+Ü½A¶â\ÈÇÌÇ±ÅÅàpÅ«éí¯ÅÍ èÜ¹ñÌÅÓµÄ
+º³¢B
+
+\verb+[ ]+ÌÉÍ¡@ðwèµÜ·ªA±êðwèµÈ¢±ÆàÅ«Ü·B
+½¾µ»ÌêA±Ì}NÍ³ÀÉ·­Èè¤éóð¶ÌÔÉÍ³ñ¾ñð
+ìé¾¯Å·ÌÅASÌÌå«³ð¼Ìû@ÅßéKvª èÜ·B
+
+\subsection*{g£@\ --- p¶ÌÔÉàóðüêé}
+
+\verb@\sparse@Íp¶ÌÔÉÍóðüêÜ¹ñBp¶ÌÔÉà
+óðüêéÉÍ \verb@\sparselist@A é¢Í \verb@\sparseList@ Æ¢¤
+}NðgpµÜ·BOÒÍ¶ñÌæªÆöÉàóªüèÜ·ªA
+ãÒÍüèÜ¹ñB
+
+±êçÌ`®ÍÈºÌæ¤ÉÈèÜ·B
+
+\begin{verbatim}
+    \sparselist+eLXg+
+\end{verbatim}
+
+±±ÅA\verb@+@ ÍeLXgÉÜÜêÈ¢CÓÌê¶Å·B
+eLXgÌªÉÍA}NÈÇðwèÅ«Ü¹ñBK¸½¶Å
+wè·éKvª èÜ·B
+
+½¾µA
+±êçÌ}NÍA\verb@\sparse@Å\verb+[ ]+Ì¡@ðwèµÈ©Á½êÌ
+æ¤ÉA{bNXÅÍÈ­A³ÀÉ·­ÈéóðÜÞ¶ñðìèÜ·B
+]ÁÄAÜÁ½·³É[ßé½ßÉÍA\verb+\makebox+ ÈÇÌ}Nð
+gÝí¹ÄwèµÜ·Bá¦Î
+
+\begin{verbatim}
+    \makebox[40mm]{\sparselist+eLXg+}
+\end{verbatim}
+ é¢Í plain \TeX Ì}Nðg¤ÈçAÌæ¤ÉÈèÜ·B
+\begin{verbatim}
+    \hbox to 40mm{\sparselist+eLXg+}
+\end{verbatim}
+Ìæ¤ÉµÜ·B
+
+\verb@\sparse@ðgÁ½êi\sparse[30mm]{¶orE}jÆA
+\verb@\sparselist@ðgÁ½êi\makebox[30mm]{\sparselist@¶orE@}j
+ðärµÄÝÜµ½B
+
+
+\section{üÇ_}
+Ver.1.1 ©çA\verb"\useruby"ðwèµÄ¢éêÅàAverbatimÂ«Èç
+\verb"@"ªoÍÅ«éæ¤ÉÈèÜµ½B
+
+Ver.2.0 ÅÍA\verb+\rubie+ }Nðp~µÜµ½B\verb+\ruby+}N
+ÅàAp¶ÌÔÉóªüçÈ¢æ¤ÉÈÁ½½ßÅ·B½¾µA
+Ý·«Ì½ßA\verb+\ruby+Æ¯¶­«ð·é}NÆµÄcµÄ èÜ·B
+\verb+\userubie+ÉÂ¢Äà¯lÅ·B
+\verb+\ruby+ÌrÉp¶ðwè·éæ¤Èg¢ûðµÄ¢½êÌÝA
+Ver.1.1ÆoÍÊªÙÈèÜ·B
+
+Ver.2.0 ©çAÏzuÌWÌ}Nð \verb@\sparse@ÉÏXµÜµ½B
+Ver.1.1ÜÅÌ \verb+\sparselist+}NA¨æÑ\verb+\sparseList+}N
+ÅÍAÏzuÌøÉpªÜÜêÄ¢½êApÌÔÉà
+óªüêçêÄ¢Üµ½ªAÀÛÉÍ»Ìæ¤Èg¢ûÍ ÜèÈ¢½ßA
+±êçÍIÈ}NÆµÜµ½B
+
+
+\section{»Ì¼}
+±Ì¶¨æÑ nruby.sty ÉÜÜêé}NÍA©RÉpAzzµÄ
+©Ü¢Ü¹ñBüÏà©RÅ·ªA»ÌêÍüÏðsÈÁ½|ð¾LµÄ
+º³¢B
+
+oOA é¢Í@\ÉÖ·é¶ÈÇÍìÒÜÅAº³¢B½¾µA
+}ÉüP³êé©Ç¤©ÜÁ½­ÛØÅ«Ü¹ñB\ruby{\tt :)}{Enjoy!}
+
+\end{document}
+------------------------------------------------------------------------
+Newsgroups: fj.comp.texhax
+From: ogihara@itc.aist-nara.ac.jp
+Subject: nruby.sty (v.2.0)
+Organization: Nara Institute of Science and Technology
+Date: Wed, 16 Mar 1994 10:57:40 GMT
+
+¬´ÞÇæ[åÅ·B
+
+¶nÌw¶ÉË³êÄìÁ½ArðÓé½ßÌX^Ct@CÅ·B
+rA¨æÑrðÓçêé¤Ì¶ñðÏzuµÜ·B
+T_ðÅÂ@\A¶ðÏzu·é@\àñµÜ·B
+
+X^Ct@CÌãëÉAÈPÈà¾¶ªÂ¢Ä¢Ü·B
+---------------------------------------------------------

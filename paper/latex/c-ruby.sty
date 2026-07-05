@@ -1,0 +1,42 @@
+% ruby.sty by Hideki ISOZAKI isozaki@ntt-20.ntt.junet
+% Jan. 25, 1988
+%
+% Usage:
+% æs¶\ruby{ÓèªÈ}{¿ânê}ã±¶
+% centering ruby
+%
+% for JLaTeX
+\font\fivedmjhira=dmjhira5
+\font\sixdmjhira=dmjhira6
+\font\sevendmjhira=dmjhira7
+% for JSliTeX
+%\font\eightdmjhira=dmjhira8
+%\font\tendmjhira=dmjhira10
+%\font\twelvedmjhira=dmjhira12
+%\font\fourteendmjhira=dmjhira14
+%\font\seventeendmjhira=dmjhira17
+%
+\def\rubyfont{%
+% for JLaTeX
+\let\jhira=\fivedmjhira%
+%\ifnum\jfsize=10\let\jhira=\fivedmjhira\fi%
+%\ifnum\jfsize=12\let\jhira=\sixdmjhira\fi%
+%\ifnum\jfsize=14\let\jhira=\sevendmjhira\fi%
+%\ifnum\jfsize=17\let\jhira=\eightdmjhira\fi%
+% for JSliTeX
+%\ifnum\jfsize=20\let\jhira=\tendmjhira\fi%
+%\ifnum\jfsize=24\let\jhira=\twelvedmjhira\fi%
+%\ifnum\jfsize=29\let\jhira=\fourteendmjhira\fi%
+%\ifnum\jfsize=34\let\jhira=\seventeendmjhira\fi%
+}
+% original version
+% \def\ruby#1#2{%
+% \leavevmode\vbox{%
+% \baselineskip0.1em\hbox{\rubyfont #1}\hbox{#2}}%
+% \hskip\jintercharskip}
+%
+% from "Jiyu-Juzai" by H. Isozaki
+%
+\def\ruby#1#2{\leavevmode\vbox{%
+\baselineskip\z@skip \lineskip.25ex
+ \ialign{##\crcr\rubyfont\hfill#1\hfill\crcr\hfill#2\hfill\crcr}}}

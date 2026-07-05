@@ -18,6 +18,7 @@
 - `distance_matrix_322_20251208.pkl`: 別PCでGurobi再実行を行うための対象322橋梁の距離行列。
 - `gurobi_validation_all_integer.csv`: 代表ケースを全整数PWLで再実行した検証結果。
 - `gurobi_validation_20_nodes.csv`: 代表ケースを20点PWLで再実行した比較結果。
+- `expected_contracts_matrix_n1-322.csv`: 期待契約件数 \(f(N,L)\)（\(N=1..322\), \(L=1,3,5,7,10\)）。`fig:expected_contracts` の一次再現元。中間審査pptxのchart4の外部リンク先 `20251126_中里さんから受領/expected_contracts_matrix.csv`（\(N=1..500\), \(L=1..50\) の完全テーブル）から転記したもので、\(N=322\) の値がpptx埋め込みチャートのキャッシュ値と一致することを確認済み（`notes/pre_git_migration_inventory.md` 0-5章）。
 
 `optimization_results_closed_form_20251207_200558.csv` はGurobi最適化時のPWL近似値を含む。得られた地域分割を厳密な閉形式値で再評価する場合は `scripts/reevaluate_optimization_objectives.py` を使う。
 
