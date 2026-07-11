@@ -146,21 +146,60 @@ gurobipy.GurobiError: License expired
 
 ⸻
 
-8. 現在の状態
+8. 現在の状態（2026-07-06更新）
 
 環境構築：完了
 Gurobi接続：完了
 スクリプト実行：可能
-ライセンス：NG（期限切れ）
+ライセンス：OK（2027-05-01まで、12章参照）
+Python環境：`bridge-extract-gpu`（Python 3.11.15）をそのまま使用（詳細は`docs/multi_pc_git_python_notes.md`）
 
 ⸻
 
 9. 次のステップ
 
-1. Gurobiライセンス更新
+1. ~~Gurobiライセンス更新~~ → 完了（12章）
 2. 軽量ケース実行（D=40, M=1）
 3. 代表ケース実行（D=25/35/40）
 4. PWL比較（20点 vs 全整数）
+
+⸻
+
+12. ライセンス更新後もエラーが出た場合（2026-07-06に発生した問題と対処）
+
+`grbgetkey`でライセンスを更新した**にもかかわらず**、`License expired <古い日付>`のエラーが出ることがある。
+
+原因: `GRB_LICENSE_FILE`環境変数（システム環境変数、Machineレベル）が明示的に別のパスを指していると、`grbgetkey`のデフォルト保存先（`%USERPROFILE%\gurobi.lic`、このPCでは`C:\Users\shunf\gurobi.lic`）を無視して、`GRB_LICENSE_FILE`が指すファイルの方を読みに行く。
+
+このPC（`C:\Users\shunf`）での実際の状況:
+* `GRB_LICENSE_FILE`（Machine） = `C:\gurobi1000\gurobi.lic` ← Gurobiが実際に読むのはこちら
+* `grbgetkey`のデフォルト保存先 = `C:\Users\shunf\gurobi.lic` ← 新しいライセンスはこちらに保存される
+
+つまり、`grbgetkey`を実行しても`GRB_LICENSE_FILE`が指す方のファイルは自動更新されない。
+
+診断コマンド（新しいライセンス取得後、まずこれを実行して場所のズレがないか確認する）:
+
+```powershell
+Write-Host "Machine: $([Environment]::GetEnvironmentVariable('GRB_LICENSE_FILE','Machine'))"
+Get-ChildItem -Path "C:\Users\shunf","C:\gurobi1000","C:\gurobi952","C:\gurobi950" -Filter "gurobi.lic" -Recurse -ErrorAction SilentlyContinue -Force | ForEach-Object {
+    Write-Host "--- $($_.FullName) (更新: $($_.LastWriteTime)) ---"
+    Get-Content $_.FullName | Select-String -Pattern "EXPIRATION"
+}
+```
+
+対処（`GRB_LICENSE_FILE`が指す場所へ、新しいライセンスの中身を上書きコピーする。環境変数自体は変更しないので即座に反映される）:
+
+```powershell
+Copy-Item "C:\Users\shunf\gurobi.lic" "C:\gurobi1000\gurobi.lic" -Force
+```
+
+確認:
+
+```powershell
+C:\Users\shunf\anaconda3\envs\bridge-extract-gpu\python.exe -c "import gurobipy as gp; m = gp.Model(); print('gurobi ok')"
+```
+
+`Academic license - for non-commercial use only - expires <日付>` と `gurobi ok` が出れば解決。次回ライセンス更新時は、`grbgetkey`実行後に必ずこの診断コマンドで場所のズレがないか確認すること。
 
 ⸻
 

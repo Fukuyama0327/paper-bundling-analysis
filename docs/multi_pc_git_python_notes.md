@@ -79,6 +79,10 @@ Unlink of file '.git/objects/pack/pack-xxxx.idx' failed. Should I try again? (y/
 
 **対処法**: `y`で数回リトライしてダメなら`n`で進める（`n`を選んでも最終的に`Fast-forward`でpull自体は成功した）。リポジトリを開いているアプリを閉じてから再実行するとより確実。
 
+## 6. Gurobiライセンス更新後も「期限切れ」エラーが出る
+
+`grbgetkey`でライセンスを更新したのに古い期限切れエラーが出続けた。原因は`GRB_LICENSE_FILE`環境変数（Machineレベル）が`grbgetkey`のデフォルト保存先とは別の場所（このPCでは`C:\gurobi1000\gurobi.lic`）を指しており、新しいライセンス（`C:\Users\shunf\gurobi.lic`に保存）が読まれていなかったこと。診断・対処法は`docs/gurobi_setup_log.md` 12章に詳細を記載。
+
 ## 関連ドキュメント
 
 - `docs/gurobi_setup_log.md`: Windows PCでのGurobi環境構築（`bridge-extract-gpu`環境の作成経緯）
