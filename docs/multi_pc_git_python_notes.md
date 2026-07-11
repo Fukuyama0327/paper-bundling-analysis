@@ -83,6 +83,39 @@ Unlink of file '.git/objects/pack/pack-xxxx.idx' failed. Should I try again? (y/
 
 `grbgetkey`でライセンスを更新したのに古い期限切れエラーが出続けた。原因は`GRB_LICENSE_FILE`環境変数（Machineレベル）が`grbgetkey`のデフォルト保存先とは別の場所（このPCでは`C:\gurobi1000\gurobi.lic`）を指しており、新しいライセンス（`C:\Users\shunf\gurobi.lic`に保存）が読まれていなかったこと。診断・対処法は`docs/gurobi_setup_log.md` 12章に詳細を記載。
 
+## 7. VS Code Remote経由の長時間計算がネットワーク切断で止まる
+
+VS Code Remote（SSH・Tunnel等）の統合ターミナルで長時間かかるコマンド（例: 36ケースのGurobiフルグリッド実行）をそのまま実行すると、リモート接続が切れた時点でそのセッションに紐づくプロセスごと終了してしまう。バグではなく、接続とプロセスが親子関係にあるための仕様。
+
+**対処法**: `Start-Process`で、リモートセッションから切り離された（デタッチされた）プロセスとして起動する。標準出力・標準エラーをログファイルにリダイレクトしておけば、後から接続し直しても進捗を確認できる。
+
+```powershell
+Start-Process -FilePath "C:\Users\shunf\anaconda3\envs\bridge-extract-gpu\python.exe" `
+  -ArgumentList "-u scripts\run_gurobi_districting.py --pwl all --cases 15:6 20:4 ... --threads 8 --output outputs\result.csv --solutions-output outputs\result_solutions.pkl" `
+  -WorkingDirectory "C:\Users\shunf\paper-bundling-analysis" `
+  -RedirectStandardOutput "outputs\run.log" -RedirectStandardError "outputs\run_error.log" `
+  -NoNewWindow -PassThru
+```
+
+ポイント:
+
+- `-u`（pythonの`-u`オプション、unbuffered）を付けると、出力がバッファされずログファイルに即座に書かれる。付けないと、実行中に`Get-Content -Tail`で見ても古い内容のまま更新されないことがある。
+- `-WorkingDirectory`は実際のリポジトリの場所（相対パス`outputs\...\`や`scripts\...`がここを起点に解決される）。
+- `-PassThru`を付けると、起動したプロセスの情報（`Id`列＝プロセスID）がその場で表示される。これを控えておく。
+- `-NoNewWindow`で、新しいウィンドウを開かずバックグラウンドで動かす。
+
+進捗確認（ログの末尾を見る）:
+
+```powershell
+Get-Content outputs\run.log -Tail 20
+```
+
+終了したかどうかの確認（プロセスIDを指定。何も表示されなくなったら終了）:
+
+```powershell
+Get-Process -Id <さっき控えたId> -ErrorAction SilentlyContinue
+```
+
 ## 関連ドキュメント
 
 - `docs/gurobi_setup_log.md`: Windows PCでのGurobi環境構築（`bridge-extract-gpu`環境の作成経緯）
