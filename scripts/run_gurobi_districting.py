@@ -228,28 +228,6 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.solutions_output.parent.mkdir(parents=True, exist_ok=True)
 
-    rows: list[dict[str, object]] = []
-    solutions: dict[tuple[float, int], dict[str, object]] = {}
-    for distance_threshold, num_regions in args.cases:
-        row, assignment = optimize_case(
-            distance_matrix=distance_matrix,
-            distance_threshold=distance_threshold,
-            num_regions=num_regions,
-            pwl_nodes=pwl_nodes,
-            y_values=y_values,
-            bundle_limit=args.bundle_limit,
-            repair_probability=repair_probability,
-            threads=args.threads,
-            time_limit=args.time_limit,
-            mip_gap=args.mip_gap,
-        )
-        rows.append(row)
-        solutions[(distance_threshold, num_regions)] = {
-            "assignment": assignment,
-            "row": row,
-            "order": order,
-        }
-
     fieldnames = [
         "MaxDistance",
         "M",
@@ -262,13 +240,38 @@ def main() -> None:
         "PWLNodes",
         "BundleLimit",
     ]
+
+    # ケースごとに逐次書き出す（長時間のグリッド実行中にクラッシュしても
+    # 完了済みケースの結果が失われないようにするため）。solutions pklも
+    # ケースごとに上書き保存する。
+    solutions: dict[tuple[float, int], dict[str, object]] = {}
     with args.output.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
-
-    with args.solutions_output.open("wb") as f:
-        pickle.dump(solutions, f)
+        f.flush()
+        for case_index, (distance_threshold, num_regions) in enumerate(args.cases, start=1):
+            print(f"[case {case_index}/{len(args.cases)}] D={distance_threshold}, M={num_regions}")
+            row, assignment = optimize_case(
+                distance_matrix=distance_matrix,
+                distance_threshold=distance_threshold,
+                num_regions=num_regions,
+                pwl_nodes=pwl_nodes,
+                y_values=y_values,
+                bundle_limit=args.bundle_limit,
+                repair_probability=repair_probability,
+                threads=args.threads,
+                time_limit=args.time_limit,
+                mip_gap=args.mip_gap,
+            )
+            writer.writerow(row)
+            f.flush()
+            solutions[(distance_threshold, num_regions)] = {
+                "assignment": assignment,
+                "row": row,
+                "order": order,
+            }
+            with args.solutions_output.open("wb") as sf:
+                pickle.dump(solutions, sf)
 
     # 実行条件をJSONサイドカーとして残す。結果CSV単体を後から見ても、
     # どの引数・どのq値で作られたかを追跡できるようにするため。
