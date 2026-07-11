@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import pickle
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -176,6 +178,7 @@ def optimize_case(
             "ElapsedSeconds": f"{elapsed:.3f}",
             "RegionCounts": "",
             "PWLNodes": len(pwl_nodes),
+            "BundleLimit": bundle_limit,
         }
         return row, np.zeros((num_bridges, num_regions), dtype=int)
 
@@ -197,15 +200,25 @@ def optimize_case(
         "ElapsedSeconds": f"{elapsed:.3f}",
         "RegionCounts": ";".join(str(count) for count in counts),
         "PWLNodes": len(pwl_nodes),
+        "BundleLimit": bundle_limit,
     }
     return row, assignment
 
 
 def main() -> None:
     args = parse_args()
+
+    # 実行時に渡された引数をそのまま表示する。打ち間違い・渡し忘れがないか
+    # ここで目視確認できる（notes/pre_git_migration_inventory.md 7-2章「暗黙依存」対策）。
+    print("=== 実行パラメータ ===")
+    for key, value in sorted(vars(args).items()):
+        print(f"  {key}: {value}")
+
     order, distance_matrix = load_distance_matrix(args.distance_matrix)
     num_bridges = len(order)
     _, repair_probability = repair_probability_from_transition_matrix(DEFAULT_TRANSITION_MATRIX)
+    print(f"  repair_probability (q): {repair_probability!r}")
+    print(f"  num_bridges: {num_bridges}")
     pwl_nodes = build_pwl_nodes(num_bridges, args.pwl)
     y_values = [
         expected_contracts(node, args.bundle_limit, repair_probability)
@@ -247,6 +260,7 @@ def main() -> None:
         "ElapsedSeconds",
         "RegionCounts",
         "PWLNodes",
+        "BundleLimit",
     ]
     with args.output.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -256,8 +270,33 @@ def main() -> None:
     with args.solutions_output.open("wb") as f:
         pickle.dump(solutions, f)
 
+    # 実行条件をJSONサイドカーとして残す。結果CSV単体を後から見ても、
+    # どの引数・どのq値で作られたかを追跡できるようにするため。
+    metadata = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "script": "scripts/run_gurobi_districting.py",
+        "arguments": {
+            "distance_matrix": str(args.distance_matrix),
+            "cases": [[d, m] for d, m in args.cases],
+            "pwl": args.pwl,
+            "bundle_limit": args.bundle_limit,
+            "threads": args.threads,
+            "time_limit": args.time_limit,
+            "mip_gap": args.mip_gap,
+            "output": str(args.output),
+            "solutions_output": str(args.solutions_output),
+        },
+        "repair_probability_q": repair_probability,
+        "num_bridges": num_bridges,
+        "pwl_node_count": len(pwl_nodes),
+    }
+    metadata_path = args.output.with_suffix(args.output.suffix + ".meta.json")
+    with metadata_path.open("w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=2)
+
     print(f"Wrote {args.output}")
     print(f"Wrote {args.solutions_output}")
+    print(f"Wrote {metadata_path}")
 
 
 if __name__ == "__main__":
