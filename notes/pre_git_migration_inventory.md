@@ -405,3 +405,4 @@ STEP3を優先して整理する場合、上記の棚卸しを踏まえ、`20251
 - **7-3（5）**: `repair_probability_from_transition_matrix` をcell 26と同一の一般m×mアルゴリズムに統一（数値一致検証済み）。
 - **7-3（7）**: cell 32と`run_gurobi_districting.py`は数学的に等価（w変数は冗長）と確認し、リポジトリ版を正本と確定。
 - **残**: 可視化セルの移植（必要時）、`config.py`の旧パラメータ整理、実データでの通し実行。
+- **追記（2026-07-11）**: 論文図表（fig:inspection_interval / fig:expected_contracts / fig:optimization_results / tab:transition_counts / tab:optimization_results）を全て再現可能化し、eMarkov実行ラッパー`step3_run_emarkov.py`を追加。実データ通し実行でRC橋5,525件・N=322を再現（322 vs 323の差は座標が福島県側の「無名橋2号」1件と特定）。本文の不整合2件（遷移集計4703→4693、基準値2.5241が旧フィッティング系列由来）を発見。詳細は`notes/step3_refactoring.md` 3b・3c章。
