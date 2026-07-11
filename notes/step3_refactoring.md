@@ -50,4 +50,7 @@
 
 - 図表再生成が必要になった際の可視化セル（choropleth・Voronoi・レポート図）の移植（4章・7-1章参照）。
 - `config.py` の旧プロジェクト由来パラメータ（ALPHA系、Weibull系、`BRIDGE_DATA_FILE`等）の整理。現行パイプラインで実際に使うのは `I`（=L）, `SHAPEFILE_PATH`, `M_RANGE`, `GUROBI_THREADS`, `USE_PWL` 程度。
-- 実データでの通し実行（ステップ2出力CSV→`step3_prepare_markov_input.py`→eMarkov→N=322・q再現の確認）。本セッションではロジックの単体テスト（合成データ）のみ実施。
+- ~~実データでの通し実行~~ → **一部完了（2026-07-06）**。Windows PC（`bridge-extract-gpu`環境、Python 3.11.15、Gurobi 10.0.0）で、実際の距離行列（`data/processed/distance_matrix_322_20251208.pkl`）を使い、代表3ケース（D=25:3, 35:3, 40:1）を全整数PWL・20点PWL両方で実行し、`data/processed/gurobi_validation_all_integer.csv` / `gurobi_validation_20_nodes.csv`を更新済み。
+  - **重要な確認**: D=35km,M=3で20点PWLと全整数PWLが異なる分割に到達し、20点PWLの厳密再評価値（1.262631045736）は全整数PWLの値（1.262041465559）より悪い（大きい）。**全整数PWLを主結果として採用する既存方針が、実データでも裏付けられた。**
+  - ただしステップ1・2（RC橋抽出〜eMarkov入力整形〜推移確率推定）自体の実データ通し実行はまだ行っていない（本項は`distance_matrix_322_20251208.pkl`が既に存在するため、その手前の工程をスキップしてGurobi最適化のみ実データで検証したもの）。
+- **進行中**: 全整数PWLでの**フルグリッド**（D=15〜50km、M=2〜6の36ケース、`data/processed/optimization_results_closed_form_20251207_200558.csv`が持つのと同じ組み合わせ）の再構築をWindows側で実行中。完了後、同ファイルを更新し、qのフル精度化（0-2章）を反映した最終版とする。

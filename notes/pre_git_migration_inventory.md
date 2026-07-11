@@ -298,6 +298,8 @@ https://d.docs.live.net/.../20251126_中里さんから受領/描写用.xlsx
 - N=322の根拠（6市町村：七ヶ宿町、白石市、蔵王町、川崎町、村田町、大河原町）を`data/README.md`または`notes/`に明記する。**→ 対応済み（0-1章）**。
 - ~~可能であれば`20251208_定期打ち合わせ/20251206.ipynb`をローカル化した上で、6市町村抽出を行っているセルを確認し～~ → **対応済み（2026-07-06）**。ノートブックをローカル化し、cell 25で該当ロジックを確認した（0-1章に転記）。同ノートブックは84.7MBかつnotebook本体のため、既存方針通りリポジトリには移植しない。今回確認した抽出ロジック（6市町村フィルタ）のみを、再現可能な小さいスクリプトとして`scripts/`に切り出すことを推奨（例: `scripts/filter_target_municipalities.py`）。
 - `data/processed/`は生データではなくパイプライン出力である旨を明確化した（2-2章・2-2b章、2026-07-06追記）。真の生データ（x-Road原データ、道路メンテナンス年報CSV、行政界データ）は`data/raw/`または`data/external/`への配置候補とし、`distance_matrix_322_20251208.pkl`のみ再計算コストの都合で例外的にそのまま再利用する。
+- 上記1点目（`OPTIMIZATION_TRANSITION_MATRIX`のフル精度化）と`compute_repair_probability`の一般化 → **対応済み（2026-07-06、`notes/step3_refactoring.md`参照）**。Windows PC（実Gurobi環境）で代表3ケースを実データ検証し、全整数PWLを主結果とする既存方針が裏付けられた。フルグリッド（36ケース）の再構築は進行中（`notes/step3_refactoring.md` 4章参照、完了後`optimization_results_closed_form_20251207_200558.csv`を更新）。
+- CLIスクリプトの使い方（`--cases`等のオプション指定方法）は`docs/cli_scripts_guide.md`に整理した。複数PC間のgit/Python環境トラブルは`docs/multi_pc_git_python_notes.md`、Gurobiライセンス関連は`docs/gurobi_setup_log.md`を参照。
 
 ---
 
