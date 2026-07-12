@@ -8,11 +8,16 @@
 
 期待される件数（notes/pre_git_migration_inventory.md 0-1章）: 宮城県RC橋 5,525件
 
+行政界チェックはデフォルトで実行される（省略時は config.SHAPEFILE_PATH を使用）。
+これを省くと座標が県外の橋梁（例: 福島県側の「無名橋2号」）が残り、
+6市町村フィルタ後の件数が期待値322と一致しなくなる
+（notes/step3_refactoring.md 3c章）。スキップする場合は --no-boundary を明示する。
+
 使用例:
     python scripts/step3_extract_rc_bridges.py \
         --input data/external/prefecture_04_宮城県_12425records_original.csv \
         --output data/processed/miyagi_rc_bridges.csv \
-        [--boundary data/N03-20230101_GML/N03-23_230101.shp]
+        [--boundary data/N03-20230101_GML/N03-23_230101.shp | --no-boundary]
 """
 
 from __future__ import annotations
@@ -122,7 +127,12 @@ def main() -> None:
     parser.add_argument(
         "--boundary",
         default=None,
-        help="行政界シェープファイル（指定時は県境界外の橋梁を除外）",
+        help="行政界シェープファイル（省略時は config.SHAPEFILE_PATH。県境界外の橋梁を除外）",
+    )
+    parser.add_argument(
+        "--no-boundary",
+        action="store_true",
+        help="行政界チェックをスキップする（県外座標の橋梁が残り、N=322が再現できなくなる）",
     )
     args = parser.parse_args()
 
@@ -132,10 +142,23 @@ def main() -> None:
     df_rc = extract_rc_bridges(df)
     print(f"RC橋抽出: {len(df_rc):,} 件")
 
-    if args.boundary:
+    if args.no_boundary:
+        print(
+            "警告: --no-boundary により行政界チェックをスキップしました。"
+            "県外座標の橋梁が残るため、6市町村フィルタ後の件数は期待値322と一致しません。"
+        )
+    else:
         from bundling_analysis.admin_boundary import filter_points_within, load_admin_boundary
+        from bundling_analysis.config import get_config
 
-        boundary = load_admin_boundary(args.boundary, prefecture=args.prefecture)
+        boundary_path = Path(args.boundary) if args.boundary else Path(get_config().SHAPEFILE_PATH)
+        if not boundary_path.exists():
+            raise SystemExit(
+                f"行政界ファイルが見つかりません: {boundary_path}\n"
+                "N=322の再現には行政界チェックが必要です（県外座標の橋梁を除外）。"
+                "--boundary で正しいパスを指定するか、意図的に省く場合は --no-boundary を付けてください。"
+            )
+        boundary = load_admin_boundary(boundary_path, prefecture=args.prefecture)
         if boundary is not None:
             df_rc, removed = filter_points_within(df_rc, boundary)
             print(f"行政界チェック: {removed} 件除外 → {len(df_rc):,} 件")

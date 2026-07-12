@@ -26,8 +26,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("outputs/optimization_results_exact_objective.csv"),
-        help="Output CSV path.",
+        default=Path("data/processed/optimization_results_exact_objective.csv"),
+        help=(
+            "Output CSV path. The default matches the canonical input of "
+            "plot_optimization_results.py so figures pick up re-evaluated values."
+        ),
     )
     parser.add_argument("--bundle-limit", type=int, default=5, help="Bundle limit L.")
     return parser.parse_args()

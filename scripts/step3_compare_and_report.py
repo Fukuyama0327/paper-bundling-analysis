@@ -125,6 +125,32 @@ def main() -> None:
             f"橋梁数 {len(df)} と距離行列サイズ {d_matrix.shape[0]} が一致しません。"
         )
 
+    # 割当行列（run_gurobi_districting.py の出力）と d_matrix はどちらも pkl の
+    # order の並びを前提とする。CSVの行順は order と異なりうる（実データでは
+    # 座標順ソート済みのため実際に異なる）ので、CSV側を order に並べ替えて
+    # admin_baseline の行番号を d_matrix・割当行列と揃える。
+    order = [str(x) for x in dist_data.get("order", [])]
+    if order:
+        if "shisetsu_id" not in df.columns:
+            raise ValueError(
+                "橋梁CSVに shisetsu_id 列がなく、距離行列pklのorderと突き合わせできません。"
+                "step3_filter_target_municipalities.py の出力を渡してください。"
+            )
+        ids = df["shisetsu_id"].astype(str).tolist()
+        if sorted(ids) != sorted(order):
+            raise ValueError(
+                "橋梁CSVの shisetsu_id と距離行列pklの order が同じ集合ではありません。"
+                "入力の組み合わせを確認してください。"
+            )
+        if ids != order:
+            df = (
+                df.assign(_sid=df["shisetsu_id"].astype(str))
+                .set_index("_sid")
+                .loc[order]
+                .reset_index(drop=True)
+            )
+            print("注意: 橋梁CSVの行順を距離行列pklのorderに合わせて並べ替えました。")
+
     _, q = repair_probability_from_transition_matrix(DEFAULT_TRANSITION_MATRIX)
     print(f"補修確率 q = {q!r}, L = {args.bundle_limit}")
 
