@@ -11,6 +11,9 @@ import argparse
 import csv
 import json
 import pickle
+import shutil
+import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -83,7 +86,34 @@ def parse_args() -> argparse.Namespace:
         default=Path("outputs/gurobi_districting_validation_solutions.pkl"),
         help="Output pickle path for assignment matrices.",
     )
+    parser.add_argument(
+        "--no-archive",
+        action="store_true",
+        help=(
+            "Skip writing an immutable per-run archive under --runs-root. By default "
+            "(archiving on), every invocation also copies its CSV/pkl/meta.json into "
+            "outputs/runs/<timestamp>/ so past runs aren't lost when --output is "
+            "overwritten by a later run (same convention as make_all_figures.py)."
+        ),
+    )
+    parser.add_argument(
+        "--runs-root",
+        type=Path,
+        default=Path("outputs/runs"),
+        help="Root directory for per-run archives (see --no-archive).",
+    )
     return parser.parse_args()
+
+
+def git_head() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True,
+        )
+        return result.stdout.strip() or "unknown"
+    except Exception:
+        return "unknown"
 
 
 def load_distance_matrix(path: Path) -> tuple[list[str], np.ndarray]:
@@ -346,6 +376,7 @@ def main() -> None:
         "repair_probability_q": repair_probability,
         "num_bridges": num_bridges,
         "pwl_node_count": len(pwl_nodes),
+        "git_head": git_head(),
     }
     metadata_path = args.output.with_suffix(args.output.suffix + ".meta.json")
     with metadata_path.open("w", encoding="utf-8") as f:
@@ -354,6 +385,19 @@ def main() -> None:
     print(f"Wrote {args.output}")
     print(f"Wrote {args.solutions_output}")
     print(f"Wrote {metadata_path}")
+
+    # 実行ごとのアーカイブ（make_all_figures.pyと同じ方針）。
+    # --output/--solutions-output は「正本」（次の実行で上書きされる固定パス）、
+    # outputs/runs/<タイムスタンプ>/ は上書きされない履歴。
+    if not args.no_archive:
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_dir = args.runs_root / run_id
+        run_dir.mkdir(parents=True, exist_ok=True)
+        for src in (args.output, args.solutions_output, metadata_path):
+            shutil.copy2(src, run_dir / src.name)
+        print(f"アーカイブ: {run_dir}")
+    else:
+        print("アーカイブは作成していません（--no-archive）")
 
 
 if __name__ == "__main__":
