@@ -60,6 +60,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--time-limit", type=float, default=None, help="Optional time limit per case.")
     parser.add_argument("--mip-gap", type=float, default=None, help="Optional relative MIP gap.")
     parser.add_argument(
+        "--warm-start-min-m",
+        type=int,
+        default=None,
+        help=(
+            "For --pwl all runs, cases with M >= this value are first solved with the "
+            "20-node PWL approximation and that assignment is fed in as a MIP start "
+            "(warm start) for the all-integer solve. Cases below this threshold skip the "
+            "pre-solve entirely, so easy (small-M) cases don't pay for an unneeded warm "
+            "start. Ignored when --pwl is already '20'. Example: --warm-start-min-m 4."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("outputs/gurobi_districting_validation.csv"),
@@ -111,6 +123,7 @@ def optimize_case(
     threads: int,
     time_limit: float | None,
     mip_gap: float | None,
+    warm_start: np.ndarray | None = None,
 ) -> tuple[dict[str, object], np.ndarray]:
     try:
         import gurobipy as gp
@@ -130,6 +143,13 @@ def optimize_case(
     z = model.addVars(num_bridges, num_regions, vtype=GRB.BINARY, name="z")
     region_sizes = model.addVars(num_regions, vtype=GRB.INTEGER, name="N_m")
     region_objectives = model.addVars(num_regions, vtype=GRB.CONTINUOUS, name="f_N_m")
+
+    if warm_start is not None:
+        # MIPスタート: 別の(通常は粗いPWLの)解を初期解として与える。
+        # zの構造(橋梁×地域)はPWLの粒度に依存しないので、そのまま転用できる。
+        for bridge_index in range(num_bridges):
+            for region in range(num_regions):
+                z[bridge_index, region].Start = int(warm_start[bridge_index, region])
 
     for bridge_index in range(num_bridges):
         model.addConstr(
@@ -225,6 +245,17 @@ def main() -> None:
         for node in pwl_nodes
     ]
 
+    # ウォームスタート用: 20点PWLのノード・値は、対象ケースが閾値以上のときだけ計算する
+    # （--warm-start-min-m未指定、または全ケースが閾値未満なら一切使わない＝オーバーヘッドゼロ）。
+    warm_start_pwl_nodes = None
+    warm_start_y_values = None
+    if args.warm_start_min_m is not None and args.pwl == "all":
+        warm_start_pwl_nodes = build_pwl_nodes(num_bridges, "20")
+        warm_start_y_values = [
+            expected_contracts(node, args.bundle_limit, repair_probability)
+            for node in warm_start_pwl_nodes
+        ]
+
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.solutions_output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -251,6 +282,27 @@ def main() -> None:
         f.flush()
         for case_index, (distance_threshold, num_regions) in enumerate(args.cases, start=1):
             print(f"[case {case_index}/{len(args.cases)}] D={distance_threshold}, M={num_regions}")
+
+            warm_start = None
+            if warm_start_pwl_nodes is not None and num_regions >= args.warm_start_min_m:
+                print(
+                    f"  M={num_regions} >= --warm-start-min-m {args.warm_start_min_m}: "
+                    f"20点PWLで事前に解いてウォームスタートを作成します"
+                )
+                pre_row, warm_start = optimize_case(
+                    distance_matrix=distance_matrix,
+                    distance_threshold=distance_threshold,
+                    num_regions=num_regions,
+                    pwl_nodes=warm_start_pwl_nodes,
+                    y_values=warm_start_y_values,
+                    bundle_limit=args.bundle_limit,
+                    repair_probability=repair_probability,
+                    threads=args.threads,
+                    time_limit=args.time_limit,
+                    mip_gap=args.mip_gap,
+                )
+                print(f"  事前解(20点PWL): ObjectiveValue_Exact={pre_row['ObjectiveValue_Exact']}")
+
             row, assignment = optimize_case(
                 distance_matrix=distance_matrix,
                 distance_threshold=distance_threshold,
@@ -262,6 +314,7 @@ def main() -> None:
                 threads=args.threads,
                 time_limit=args.time_limit,
                 mip_gap=args.mip_gap,
+                warm_start=warm_start,
             )
             writer.writerow(row)
             f.flush()
@@ -286,6 +339,7 @@ def main() -> None:
             "threads": args.threads,
             "time_limit": args.time_limit,
             "mip_gap": args.mip_gap,
+            "warm_start_min_m": args.warm_start_min_m,
             "output": str(args.output),
             "solutions_output": str(args.solutions_output),
         },
