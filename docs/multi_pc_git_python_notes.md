@@ -87,7 +87,9 @@ Unlink of file '.git/objects/pack/pack-xxxx.idx' failed. Should I try again? (y/
 
 VS Code Remote（SSH・Tunnel等）の統合ターミナルで長時間かかるコマンド（例: 36ケースのGurobiフルグリッド実行）をそのまま実行すると、リモート接続が切れた時点でそのセッションに紐づくプロセスごと終了してしまう。バグではなく、接続とプロセスが親子関係にあるための仕様。
 
-**対処法**: `Start-Process`で、リモートセッションから切り離された（デタッチされた）プロセスとして起動する。標準出力・標準エラーをログファイルにリダイレクトしておけば、後から接続し直しても進捗を確認できる。
+### 7-1. `Start-Process`（デタッチ実行）は不十分だった（2026-07-11〜12の実体験）
+
+最初に試したのは、`Start-Process`でリモートセッションから切り離す方法。
 
 ```powershell
 Start-Process -FilePath "C:\Users\shunf\anaconda3\envs\bridge-extract-gpu\python.exe" `
@@ -97,24 +99,51 @@ Start-Process -FilePath "C:\Users\shunf\anaconda3\envs\bridge-extract-gpu\python
   -NoNewWindow -PassThru
 ```
 
-ポイント:
+ポイント（`-u`＝unbuffered出力でログが即時反映される、`-WorkingDirectory`必須、`-PassThru`でプロセスID表示、`-NoNewWindow`でバックグラウンド化）は今も有効だが、**これだけでは不十分**だった。36ケースのフルグリッド実行で、**2回とも**エラーログ・例外なしに、Gurobiのログが突然途切れる形でプロセスが消えた（1回目は開始21分後・ギャップ20%、2回目は開始2.2時間後・ギャップ0.10%まで来ていた）。原因はスリープではない（`powercfg /change standby-timeout-ac 0`で無効化済みでも発生）。VS Code Remoteのセッション終了時に、`Start-Process`で作った子プロセスも何らかの経路で道連れにされている可能性が高いが、確証は得られていない。
 
-- `-u`（pythonの`-u`オプション、unbuffered）を付けると、出力がバッファされずログファイルに即座に書かれる。付けないと、実行中に`Get-Content -Tail`で見ても古い内容のまま更新されないことがある。
-- `-WorkingDirectory`は実際のリポジトリの場所（相対パス`outputs\...\`や`scripts\...`がここを起点に解決される）。
-- `-PassThru`を付けると、起動したプロセスの情報（`Id`列＝プロセスID）がその場で表示される。これを控えておく。
-- `-NoNewWindow`で、新しいウィンドウを開かずバックグラウンドで動かす。
+**結論: `Start-Process`は「ターミナルを閉じる」対策にはなるが、「VS Code Remoteのセッション終了」対策としては信頼できなかった。**
 
-進捗確認（ログの末尾を見る）:
+### 7-2. 最終的な解決策: タスクスケジューラ（ログイン・リモート接続と完全に分離）
+
+Windowsのタスクスケジューラにジョブとして登録すれば、ユーザーのログインセッション・リモート接続の生死と無関係に実行され続ける。パスワード保存が要らない`LogonType S4U`を使う。
 
 ```powershell
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument '/c ""C:\Users\shunf\anaconda3\envs\bridge-extract-gpu\python.exe" -u scripts\run_gurobi_districting.py --pwl all --warm-start-min-m 4 --mip-gap 0.005 --cases 15:6 20:4 ... --threads 8 --output outputs\result.csv --solutions-output outputs\result_solutions.pkl > outputs\run.log 2> outputs\run_error.log"' -WorkingDirectory "C:\Users\shunf\paper-bundling-analysis"
+
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(30)
+$principal = New-ScheduledTaskPrincipal -UserId "<whoamiの出力>" -LogonType S4U -RunLevel Highest
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Days 3) -MultipleInstances IgnoreNew
+
+Register-ScheduledTask -TaskName "GurobiFullGrid" -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force
+```
+
+ポイント・ハマりどころ:
+
+- **`-Execute`に直接python.exeを指定すると標準出力のリダイレクト（`>`）が効かない**（`New-ScheduledTaskAction`はシェルのリダイレクト構文を解釈しない）。`cmd.exe /c "実際のコマンド > log 2> errlog"`でラップする必要がある。
+- **`-UserId "$env:USERDOMAIN\$env:USERNAME"`はエラーになった**（`Register-ScheduledTask : アカウント名とセキュリティ IDの間のマッピングは実行されませんでした`、HRESULT 0x80070534）。このPCでは`$env:USERDOMAIN`が正しく解決されていなかった。**`whoami`の生の出力（例: `desktop-qecoeiu\local_mizutani_1`）をそのまま`-UserId`に使ったら成功した。**
+- 登録直後は`Register-ScheduledTask`の戻り値で`State: Ready`と表示されるだけで、実行が始まったかは別途確認が必要。
+- `LogonType S4U`はネットワークドライブ等にはアクセスできないが、ローカルファイル操作のみのこのスクリプトには問題ない。
+
+登録・起動確認:
+
+```powershell
+Get-ScheduledTask -TaskName "GurobiFullGrid" | Get-ScheduledTaskInfo
+```
+
+`LastRunTime`が直近なら起動済み。`LastTaskResult`が`267009`（0x41301）は「実行中」を表す正常値であってエラーではない。
+
+進捗確認（プロセス・ログ・結果CSV）:
+
+```powershell
+Get-Process python -ErrorAction SilentlyContinue
 Get-Content outputs\run.log -Tail 20
+Get-Content outputs\result.csv
 ```
 
-終了したかどうかの確認（プロセスIDを指定。何も表示されなくなったら終了）:
+### 7-3. 合わせて使うと安心な追加策
 
-```powershell
-Get-Process -Id <さっき控えたId> -ErrorAction SilentlyContinue
-```
+- `--mip-gap 0.005`のように、ある程度のギャップ許容を付けておく。7-1の2回目の失敗は「あと少し（0.10%）で終わるところ」で消えたので、ギャップ許容があれば、その「あと少し」の時点で正常終了してCSVに書き込まれていた可能性が高い。全整数PWLなので、ギャップは近似ではなく本物の閉形式目的関数に対する保証。
+- 難しいケース（M大きめ）だけ20点PWLの解を初期解として与える`--warm-start-min-m`（`scripts/run_gurobi_districting.py`に実装済み、`notes/step3_refactoring.md`参照）。
 
 ## 関連ドキュメント
 
