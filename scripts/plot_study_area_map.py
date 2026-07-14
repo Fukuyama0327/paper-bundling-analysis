@@ -77,10 +77,11 @@ def main() -> None:
     mx, my = (maxx - minx) * 0.03, (maxy - miny) * 0.03
     ax.set_xlim(minx - mx, maxx + mx)
     ax.set_ylim(miny - my, maxy + my)
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
     ax.set_aspect("equal", adjustable="box")
-    ax.grid(color="#e0e0e0", linewidth=0.6)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
     ax.legend(frameon=True, loc="upper right", fontsize=9, title=f"Managing municipality (N={len(df)})")
     fig.tight_layout()
 

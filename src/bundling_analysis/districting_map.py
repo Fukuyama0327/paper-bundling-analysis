@@ -189,14 +189,13 @@ def plot_voronoi_map(
         ax.set_xlim(minx - mx, maxx + mx)
         ax.set_ylim(miny - my, maxy + my)
     ax.set_aspect("equal", adjustable="box")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
     if title:
-        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_title(title, fontsize=12 if show_legend else 7,
+                     fontweight="bold" if show_legend else "normal")
     if show_legend:
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
         ax.legend(handles=legend_elements, loc="upper right", fontsize=9, frameon=True)
-        ax.grid(color="#e0e0e0", linewidth=0.6)
-    else:
-        ax.set_xticks([])
-        ax.set_yticks([])
     return fig, ax
