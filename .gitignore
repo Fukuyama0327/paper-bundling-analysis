@@ -25,6 +25,12 @@ data/interim/
 references/pdf/*.pdf
 references/pdf/**/*.pdf
 
+# Reference source materials (Office binaries at references/ root) are kept locally.
+# Already-tracked ones (e.g. area_management_survey_report*.docx) stay in Git;
+# these patterns only stop new large docx/pptx source files from being committed.
+references/*.docx
+references/*.pptx
+
 # Office temporary files
 ~$*
 *.tmp
@@ -39,6 +45,8 @@ paper/latex/*.synctex.gz
 paper/latex/*.toc
 paper/latex/*.bbl
 paper/latex/*.blg
+paper/latex/*.fls
+paper/latex/*.fdb_latexmk
 paper/latex/main.pdf
 paper/latex/.overleaf/
 
@@ -50,3 +58,8 @@ paper/latex/.overleaf/
 # Local license files
 gurobi.lic
 .gurobi/
+
+# Local scratch and tool cruft (not part of the project)
+.trash_local/
+tmp/
+AGENTS.md
