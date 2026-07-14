@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""レガシー・シミュレーション比較検証用スクリプト（現行パイプライン未接続）。
+
+補修契約件数をモンテカルロ・シミュレーションで並列計算する旧実装。import 時に
+カレントディレクトリの ``input_data.pkl`` を前提とする設計で、現行のステップ3
+パイプライン（`expected_contracts.py` の閉形式 f(N,L) を用いる系）には接続されて
+おらず、README のパイプライン表にも掲載していない。閉形式解とシミュレーション値の
+比較検証（`fig:expected_contracts` の系列）の出典として残している。
+"""
 import pickle  # オブジェクトの保存・読み込みに使用
 import numpy as np  # 数値計算用
 from tqdm import tqdm  # 進捗バーの表示用

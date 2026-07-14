@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from bundling_analysis.expected_contracts import (
     DEFAULT_TRANSITION_MATRIX,

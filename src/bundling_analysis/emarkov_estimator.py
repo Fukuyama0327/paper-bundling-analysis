@@ -1,7 +1,9 @@
 """MATLAB 版 eMarkov.m を Python に移植した実装モジュール。
 
-# python scripts/emarkov_estimator.py を直接実行すると、
-# MATLAB と同じ入力（NationalRoadDB.txt）に対して同じ指標が得られる。
+現在の所在は ``src/bundling_analysis/emarkov_estimator.py``。パイプラインからは
+``scripts/step3_run_emarkov.py`` 経由で呼び出す。このモジュールを直接
+``python -m bundling_analysis.emarkov_estimator`` として実行すると、MATLAB と同じ
+入力（NationalRoadDB.txt）に対して同じ指標が得られる（末尾の ``__main__`` デモ）。
 
 元の MATLAB コードはニュートン–ラフソン法で多段階の劣化マルコフ
 モデルを推定する。ここでは同じアルゴリズムを Python/Numpy で再現し、
@@ -35,7 +37,7 @@ MATLABとの完全一致を目指す場合の推奨設定::
 
     >>> import pandas as pd
     >>> df = pd.read_csv("...prefecture_data...")
-    >>> from scripts.emarkov_estimator import (
+    >>> from bundling_analysis.emarkov_estimator import (
     ...     prepare_transition_arrays,
     ...     build_design_matrix,
     ...     EMarkovEstimator,
@@ -84,8 +86,8 @@ class EMarkovResult:
 class EMarkovEstimator:
     """ニュートン–ラフソン法で劣化マルコフモデルを推定するメインクラス。"""
 
-    # python scripts/emarkov_estimator.py 実行時はこのクラスで
-    # MATLAB の eMarkov.m と同じ推定を行う
+    # step3_run_emarkov.py（およびこのモジュールの __main__ デモ）は
+    # このクラスで MATLAB の eMarkov.m と同じ推定を行う
 
     def __init__(
         self,
@@ -906,7 +908,7 @@ __all__ = [
 
 
 if __name__ == "__main__":
-    # python scripts/emarkov_estimator.py を実行した際の出力。
+    # python -m bundling_analysis.emarkov_estimator を実行した際の出力。
     # MATLAB eMarkov.m と同じ指標を並べて表示する。
     result = demo_with_national_roads()
     print("=== eMarkov Python Demo (NationalRoadDB.txt) ===")

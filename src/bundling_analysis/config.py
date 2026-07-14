@@ -8,10 +8,17 @@ from typing import Optional
 
 @dataclass
 class ProjectConfig:
-    """プロジェクト設定クラス"""
+    """プロジェクト設定クラス。
+
+    現行のステップ3パイプラインで実際に使うのは SHAPEFILE_PATH, I(=L),
+    M_RANGE, GUROBI_THREADS, USE_PWL 程度。それ以外の多くは旧シミュレーション／
+    旧目的関数（距離ペナルティ・類似性報酬・ワイブル劣化モデル等）由来のレガシーで、
+    現行パイプラインでは未使用（notes/step3_refactoring.md 4章）。個々の項目末尾に
+    「レガシー・現行未使用」を明記した。
+    """
     # ファイルパス設定
-    BRIDGE_DATA_FILE: str = "テスト宮城県橋梁位置.xlsx"
-    SHAPEFILE_PATH: str = "data/N03-20230101_GML/N03-23_230101.shp"
+    BRIDGE_DATA_FILE: str = "テスト宮城県橋梁位置.xlsx"  # レガシー・現行未使用（座標はx-Road原データから直接取得）
+    SHAPEFILE_PATH: str = "data/N03-20230101_GML/N03-23_230101.shp"  # 現行使用（行政界クリップ）
     
     # シミュレーションパラメータ
     T: int = 100  # シミュレーション年数
@@ -30,10 +37,11 @@ class ProjectConfig:
     
     # 機能のオプション設定
     USE_DEGRADATION_PENALTY: bool = False  # 劣化傾向ペナルティを使用するか
-    USE_WEIBULL_MODEL: bool = False        # 2次元混合ワイブルモデルを使用するか
+    USE_WEIBULL_MODEL: bool = False        # 2次元混合ワイブルモデルを使用するか（レガシー・現行未使用）
     USE_PEARSON_CORRELATION: bool = False  # ピアソン相関による類似度を使用するか
     
-    # 劣化モデルパラメータ
+    # 劣化モデルパラメータ（レガシー・現行未使用。採用する劣化推移は
+    # eMarkov 推定 → expected_contracts.DEFAULT_TRANSITION_MATRIX の系列）
     ALPHA: float = 1.2909       # 加速度パラメータ
     LOG_ETA: float = -5.1636    # ログスケールパラメータ
     VARPHI: float = 4.5534      # 異質性パラメータ
@@ -46,7 +54,9 @@ class ProjectConfig:
     M_RANGE: tuple = (1, 7)     # 地域数の範囲 (start, end)
     N_SUBSET: int = 500          # 橋梁数の間引き設定
     
-    # マルコフ遷移確率行列
+    # マルコフ遷移確率行列（レガシー・未使用の仮値）。
+    # 採用する推移確率行列は expected_contracts.DEFAULT_TRANSITION_MATRIX
+    # （with_supply系フル精度、q≈0.0123298）。名前が似ているが別物なので混同しないこと。
     MARKOV_TRANSITION_MATRIX = [
         [0.95, 0.05, 0.00],  # 状態1 → 状態1 or 2
         [0.00, 0.94, 0.06],  # 状態2 → 状態2 or 3
