@@ -88,7 +88,7 @@ def main() -> None:
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path("data/processed/markov_input_20251207_200558/markov_input_with_supply.txt"),
+        default=Path("data/processed/markov_input_20251207_200558/markov_input_with_supply_collapse.txt"),
     )
     parser.add_argument("--output-stem", type=Path, default=Path("figures/inspection_interval"),
                         help="出力ファイル名（拡張子なし。png/svg/pdfを生成）")
