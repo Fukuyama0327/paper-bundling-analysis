@@ -35,6 +35,12 @@ references/*.pptx
 ~$*
 *.tmp
 
+# Districting atlas vector exports are heavy (SVG ~1M lines, PDF ~9MB) and
+# regenerable from the committed solutions pkl via scripts/make_districting_maps.py.
+# Keep only the PNG in Git.
+figures/atlas/*.svg
+figures/atlas/*.pdf
+
 # LaTeX build artifacts (regenerate via lualatex/latexmk; source .tex/.sty/.cls are tracked)
 # main.pdf is excluded too since it's regenerable from main.tex; `git add -f paper/latex/main.pdf`
 # if you'd rather keep a viewable copy on GitHub.
