@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -37,9 +38,18 @@ def run_step(script: str, args: list[str], log_dir: Path) -> dict:
     """図表生成スクリプトを1本実行し、ログを保存して結果を返す。"""
     cmd = [sys.executable, str(REPO_ROOT / "scripts" / script), *args]
     print(f"\n=== {script} ===")
+    # 環境変数はまるごと引き継ぎ、PYTHONPATHだけ追記する。
+    # 以前はPATH/PYTHONPATHをUnix向けの固定値で丸ごと差し替えていたため、
+    # Windowsで USERPROFILE 等が消え、matplotlibがホームディレクトリを
+    # 解決できずに落ちていた（2026-07-14に発見）。
+    env = os.environ.copy()
+    src_path = str(REPO_ROOT / "src")
+    existing_pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = (
+        src_path if not existing_pythonpath else f"{src_path}{os.pathsep}{existing_pythonpath}"
+    )
     result = subprocess.run(
-        cmd, cwd=REPO_ROOT, capture_output=True, text=True,
-        env={"PYTHONPATH": str(REPO_ROOT / "src"), "PATH": "/usr/bin:/bin:/usr/local/bin"},
+        cmd, cwd=REPO_ROOT, capture_output=True, text=True, env=env,
     )
     sys.stdout.write(result.stdout)
     if result.returncode != 0:
