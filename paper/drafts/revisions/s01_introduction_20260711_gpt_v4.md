@@ -18,24 +18,17 @@
 
 日本では，国土交通省が「地域インフラ群再生戦略マネジメント（群マネ）」を推進し，自治体の枠を越えた広域連携をその一類型として示している（国土交通省, 2025）．
 
-しかし，複数自治体の橋梁を一体的に管理・発注する場合に，どのように管理エリアを設計すれば，地理的制約の下で期待契約件数を最小化できるかは，明らかになっていない．
+しかし，複数自治体の橋梁を一体的に管理・発注する場合に，どのように管理エリアを設計すれば契約バンドリングによる契約集約効果を最大化できるかは，明らかになっていない．
 
-この問いは，インフラの確率的維持管理，地域分割，道路インフラ事業の契約バンドリングという三つの研究領域にまたがる．インフラ維持管理研究では，確率的な劣化・故障過程を維持管理方針や施設配置の最適化に組み込む方法が研究されてきた（Nakazato et al., 2023; Mizutani et al., 2025）．地域分割研究では，地理的な基本単位を複数の地区へ編成するための方法が体系的に研究されてきた（Kalcsics and Rios-Mercado, 2019）．一方，道路インフラ分野の契約バンドリング研究は，あらかじめ選定された事業群から契約ロットを構成する方法を扱っている（Qiao et al., 2026）．しかし，確率的に発生する橋梁補修需要と契約バンドリングを結び付け，管理エリアの設計問題として扱う枠組みは，確認した範囲では示されていない．
+この問いに関連する既往研究は，地域分割と道路インフラ事業の契約バンドリングという二つの研究領域にまたがる．地域分割研究では，地理的な基本単位を複数の地区へ編成するための方法が体系的に研究されてきた（Kalcsics and Rios-Mercado, 2019）．一方，道路インフラ分野の契約バンドリング研究は，あらかじめ選定された事業群から契約ロットを構成する方法を扱っている（Qiao et al., 2026）．しかし，確率的に発生する橋梁補修需要と契約バンドリングを結び付け，管理エリアの設計問題として扱う枠組みは，確認した範囲では示されていない．
 
-本研究は，確率的劣化に伴う補修需要と契約バンドリングルールを統合した地域分割最適化モデルを構築し，広域連携による契約集約効果を定量的に評価することを目的とする．
-
-本研究の主な貢献は以下の3点である．
-
-**貢献①：確率的補修需要，契約バンドリング，地域分割の統合的定式化．** 確率的維持管理，契約バンドリング，地域分割として個別に扱われてきた三つの問題を，橋梁補修の管理エリア設計という一つの最適化問題として統合する．
-
-**貢献②：橋梁劣化データから調達評価への接続．** 点検データからマルコフ推移確率を推定し，補修需要の発生確率を導出するとともに，地域内橋梁数 $N$ と一契約当たりの同時発注上限 $L$ を引数とする期待契約件数の閉形式 $f(N,L)$ を構築する．これにより，確率的な補修需要を契約集約効果の評価指標へ変換し，地域分割最適化の目的関数に組み込む．
-
-**貢献③：実橋梁データに基づく広域連携効果の定量評価．** 宮城県内の橋梁データを用いて，管理橋梁数，同時発注上限，地域数および距離制約が期待契約件数に与える影響を体系的に分析し，現行の管理単位との比較を通じて契約集約効果を示す．
+本研究は，確率的劣化に伴う補修需要と契約バンドリングルールを統合した地域分割最適化モデルを構築し，広域連携による契約集約効果を定量的に評価することを目的とする．本研究の貢献は3点ある．第一に，管理エリアの空間設計と契約ロットの集約を同一の数理的枠組みで定式化する．第二に，マルコフ劣化モデルから導かれる補修需要確率を地域分割問題に組み込み，将来の補修需要を内生化する．第三に，地域内橋梁数 $N$ と一契約当たりの同時発注上限 $L$ を引数とする期待契約件数の閉形式 $f(N,L)$ を導出し，バンドリング効果を解析的に評価可能にする．宮城県内の実橋梁データを用いた数値実験により，地域数および地域内の距離制約が期待契約件数に与える影響を明らかにする．
 
 ---
 
 > **残課題・確認事項**
 > - 「プロジェクトリストを所与とする既存研究」という指摘は、既往研究章でQiaoらの限界として詳述する。Introductionでは代表文献1件によるギャップ宣言にとどめる。
+> - 貢献③の「シミュレーションによらず」という主張：従来の期待契約件数がシミュレーション推定だったことの説明は、モデル章で行う。
 > - FHWA (2020) が直接支持するのは、規模の経済、調達時間短縮、設計・施工の効率化、材料単価低減。受注者の「安定的な事業量確保」は同資料から確認できないため削除した。
 > - FDOTのDistrict別橋梁数から「バンドリング条件を自然に満たす」とする推論、日本の自治体平均橋梁数、「一補修サイクル1〜2橋」、および「世界各地で共通」とする一般化は、確認した出典が直接支持しないため削除した。国外との共通性は、FHWAのNebraska複数郡バンドリング事例が直接支える範囲に限定して記述した。
 > - 四国地方整備局（2019）が直接示すのは、遠距離多数橋の一括発注に関する留意事項と「最も離れた橋梁間の最大距離を50 km程度まで」とする実務目安であり、「一補修サイクル1〜2橋」の根拠ではない。
@@ -52,10 +45,8 @@
 | [1] | FHWA, 2020 | `fhwafactsheet` | FHWA: Project Bundling Fact Sheet (EDC-5), Federal Highway Administration, U.S. Department of Transportation, 2020. |
 | [2] | FHWA, 2019 | `fhwa2019` | FHWA: Bridge Bundling Guidebook: An Efficient and Effective Method for Maintaining and Improving Bridge Assets, Federal Highway Administration, U.S. Department of Transportation, 2019. |
 | [3] | 国土交通省, 2025 | `mlit2025gunmane` | 国土交通省：地域インフラ群再生戦略マネジメント手引き Ver.1，2025年10月. |
-| [4] | Nakazato et al., 2023 | `nakazato2023`（未登録） | Nakazato, Y., Mizutani, D. and Fukuyama, S.: Optimal Repair Policies for Infrastructure Systems with Life Cycle Cost Minimization and Annual Cost Leveling, Journal of Infrastructure Systems, Vol.29, No.3, 04023021, 2023. https://doi.org/10.1061/JITSE4.ISENG-2169 |
-| [5] | Mizutani et al., 2025 | `mizutani2025`（未登録） | Mizutani, D., Fukuyama, S. and Satsukawa, K.: Optimal road facility spare parts location with continuum approximation, Transportation Research Part C: Emerging Technologies, Vol.174, 105109, 2025. https://doi.org/10.1016/j.trc.2025.105109 |
-| [6] | Kalcsics and Rios-Mercado, 2019 | `kalcsics2019` | Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019. https://doi.org/10.1007/978-3-030-32177-2_25 |
-| [7] | Qiao et al., 2026 | `qiao2026` | Qiao, J. Y., Guo, Y., Seilabi, S., Fricker, J. D. and Labi, S.: A proposed algorithm for identifying heuristic-optimal bundling strategies, Computer-Aided Civil and Infrastructure Engineering, Vol.49, 100100, 2026. https://doi.org/10.1016/j.cacaie.2026.100100 |
+| [4] | Kalcsics and Rios-Mercado, 2019 | `kalcsics2019` | Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019. |
+| [5] | Qiao et al., 2026 | `qiao2026` | Qiao, J. Y., Guo, Y., Seilabi, S., Fricker, J. D. and Labi, S.: A proposed algorithm for identifying heuristic-optimal bundling strategies, Computer-Aided Civil and Infrastructure Engineering, Vol.49, 100100, 2026. |
 
 ---
 
@@ -104,46 +95,16 @@
 - **判断**: 現在の本文を直接支持する。「政策目標として掲げる」よりも、資料自身の定義に沿って「推進している」「連携形態が示されている」と書く方が正確。
 - **原典**: `references/pdf/国交省_地域インフラ群再生戦略マネジメント手引き_本編.pdf`
 
-### [4] Nakazato et al. (2023) — Optimal Repair Policies for Infrastructure Systems
+### [4] Kalcsics and Rios-Mercado (2019) — Districting Problems
 
-- **本文で支える主張**: 確率的劣化過程をインフラシステムの補修方針最適化に組み込む研究が行われていること。
-- **原文（Summary and Future Tasks）**:
+- **本文で支える主張**: districtingの一般的枠組みと、連続性・コンパクト性・負荷均衡等の代表的評価基準。
+- **原文**: **原典本文未確認**。現在リポジトリにあるのは調査メモのみで、原著の引用可能な原文とページ番号は未収録。
+- **暫定的な確認元**: `references/pdf/調達バンドリング_勉強/District Optimization (Districting Problem) の理論的位置付けと橋梁補修契約バンドリング研究への接続可能性.md`
+- **要対応**: main.texへ反映する前に原著を確認し、定義または代表的評価基準を示す原文とページ番号を記録する。
 
-> “It applies a Markov decision process to consider stochastic deterioration processes.”
-
-- **判断**: 確率的劣化過程を補修方針の最適化に組み込むという本文の分野説明を直接支持する。
-- **原典**: https://doi.org/10.1061/JITSE4.ISENG-2169
-
-### [5] Mizutani et al. (2025) — Optimal road facility spare parts location with continuum approximation
-
-- **本文で支える主張**: 道路施設の故障過程を考慮した施設配置最適化が研究されていること。
-- **原文（Abstract）**:
-
-> “taking into account the failure processes of expressway facilities.”
-
-- **判断**: 確率的な故障過程と空間的な施設配置計画を接続するという本文の分野説明を直接支持する。本研究とは対象および意思決定変数が異なるため，既往研究章では必要な範囲に限定して位置付ける。
-- **原典**: https://doi.org/10.1016/j.trc.2025.105109
-- **出版社ページ**: https://www.sciencedirect.com/science/article/pii/S0968090X25001135
-
-### [6] Kalcsics and Rios-Mercado (2019) — Districting Problems
-
-- **本文で支える主張**: districtingでは，地理的な基本単位を複数の地区へ編成する問題が体系的に研究されていること。
-- **原文（Abstract）**:
-
-> “Districting is the problem of grouping small geographic areas, called basic units, into larger geographic clusters, called districts.”
-
-- **判断**: 地理的な基本単位を複数の地区へ編成するという本文の分野説明を直接支持する。地区の連続性，コンパクト性，負荷均衡等の詳細はSection 2で原著本文に基づいて整理する。
-- **原典**: https://doi.org/10.1007/978-3-030-32177-2_25
-- **書誌・Abstract確認**: https://ideas.repec.org/h/spr/sprchp/978-3-030-32177-2_25.html
-
-### [7] Qiao et al. (2026) — A proposed algorithm for identifying heuristic-optimal bundling strategies
+### [5] Qiao et al. (2026) — A proposed algorithm for identifying heuristic-optimal bundling strategies
 
 - **本文で支える主張**: 与えられた道路事業群を組み合わせてbundleを構成する問題であり、確率的劣化による需要発生と管理エリア設計を同時には扱わないこと。
-- **原文（Abstract）**:
-
-> “This paper formulates project bundling as a combinatorial optimization problem and solves it using a greedy heuristic algorithm.”
-
-- **判断**: 複数事業からbundleを構成する組合せ最適化問題を扱うことを直接支持する。確率的劣化による需要発生と管理エリア設計を扱わないという点は，原文中の明示的な限界記述ではなく，同論文の問題設定・定式化と本研究を比較した著者側の判断であるため，Section 2でその根拠を詳述する。
-- **原典**: https://doi.org/10.1016/j.cacaie.2026.100100
-- **出版社ページ**: https://www.sciencedirect.com/science/article/pii/S1093968726030860
-- **リポジトリ内レビュー**: `references/qiao2026_review.md`
+- **原文**: **原典本文未確認**。現在リポジトリにあるのは論文レビューであり、原著の引用可能な原文とページ番号は未収録。
+- **暫定的な確認元**: `references/qiao2026_review.md`
+- **要対応**: main.texへ反映する前に、入力となるproject set、意思決定変数、問題設定を示す原文を確認する。論文に明記されない「扱っていない事項」は、方法・定式化全体を確認した上で著者側の比較判断として記述する。

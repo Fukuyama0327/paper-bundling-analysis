@@ -119,7 +119,7 @@ Gurobiは別PC（ライセンス保有機）での実行を前提とする（`do
 
 | 研究群 | 補修需要の内生化 | 契約ロット設計 | 空間分割最適化 | 代表文献 |
 |---|---|---|---|---|
-| 劣化モデル系 | ○ | ✗ | ✗ | Hadjidemetriou 2020, Frangopol & Liu 2007 |
+| 確率的維持管理系 | ○ | ✗ | △ | Nakazato et al. 2023, Mizutani et al. 2025 |
 | 契約バンドリング系 | ✗（外生） | ○ | △ | Qiao 2018/2021, Miralinaghi 2022 |
 | District Optimization系 | ✗ | ✗ | ○ | Kalcsics 2019, Bozkaya 2003 |
 | **本研究** | **○** | **○** | **○** | 三系統の統合定式化 |
@@ -132,10 +132,23 @@ Gurobiは別PC（ライセンス保有機）での実行を前提とする（`do
 
 ## 直近の作業状況
 
-- `調達論点整理.md` 6章（既往研究・三系統レビュー＋DOIリンク）: 完了
-- `調達論点整理.md` 7章（数理モデル全体像）: 完了
-- `調達論点整理.md` 8章（新規性3点構成）: 完了
-- `調達論点整理.md` 参考資料一覧（学術論文19件追加・タイトル検証済み）: 完了
+### 完了
+- `米国の管理階層と日本との比較.md` Section 3-6（国際比較 9ヶ国）: 完了
+- `米国の管理階層と日本との比較.md` Chapter 4（4-1〜4-6、4類型整理）: 完了
+- `paper/drafts/s01_introduction.md`（Section 1 はじめに草稿）: 完了（2026-07-11）
+
+### 完了（2026-07-11、続き）
+- main.tex Section 2（既往研究）にGooijer et al. (2024) 引用を追加（Qiao et al. 2026の直後、Type Bの位置付けで1文）。
+- main.tex Section 2にType C背景段落を追加（Cerema/仏、ADEPT/英、Austroads/豪、Te Ringa Maimoa/NZ、FMS/韓を1段落で整理、表1の直後）。
+- main.tex Section 2にType A/B/C/D 4類型表（`tab:typology`）を追加し、末尾の新規性宣言をType D位置付けに接続する形へ書き換え。
+- 新規`\bibitem`を7件追加：`gooijer2024`, `cerema2024`, `adeptnbg`, `austroads2021`, `teringamaimoa`, `koreafms`, `asce2021bridges`。
+- 括弧・環境の対応、`\cite`と`\bibitem`の対応は確認済み（サンドボックス環境にluatexja-presetがないため実コンパイルは未実施。ローカル環境でのコンパイル確認が必要）。
+
+### main.tex に未反映（次セッションで対応予定）
+
+**Section 1（はじめに）のmain.tex統合**
+- `paper/drafts/s01_introduction.md` は完成（2026-07-11）。ASCE 2021 Infrastructure Report Card (Bridges) を冒頭引用として採用し、サブセクション見出しなしの1本の文章に統合済み。`asce2021bridges`の`\bibitem`はmain.texに追加済みだが、Introduction本文自体のmain.tex統合（既存の「はじめに」セクションの置き換え）は未実施。
+- 統合時の要判断：本文で「State DOT District 800〜1,300橋」の出典を`fhwa2019`（FHWA Bridge Bundling Guidebook, 2019）に統一するか、ドラフトが使うFDOT (2021) を別途`\bibitem`として追加するか（ドラフト末尾の残課題参照）。
 
 ## 主要パラメータ（数値計算）
 

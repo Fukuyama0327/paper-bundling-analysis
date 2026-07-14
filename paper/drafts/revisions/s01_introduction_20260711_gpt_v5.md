@@ -20,13 +20,13 @@
 
 しかし，複数自治体の橋梁を一体的に管理・発注する場合に，どのように管理エリアを設計すれば，地理的制約の下で期待契約件数を最小化できるかは，明らかになっていない．
 
-この問いは，インフラの確率的維持管理，地域分割，道路インフラ事業の契約バンドリングという三つの研究領域にまたがる．インフラ維持管理研究では，確率的な劣化・故障過程を維持管理方針や施設配置の最適化に組み込む方法が研究されてきた（Nakazato et al., 2023; Mizutani et al., 2025）．地域分割研究では，地理的な基本単位を複数の地区へ編成するための方法が体系的に研究されてきた（Kalcsics and Rios-Mercado, 2019）．一方，道路インフラ分野の契約バンドリング研究は，あらかじめ選定された事業群から契約ロットを構成する方法を扱っている（Qiao et al., 2026）．しかし，確率的に発生する橋梁補修需要と契約バンドリングを結び付け，管理エリアの設計問題として扱う枠組みは，確認した範囲では示されていない．
+この問いは，橋梁の劣化モデル，地域分割，道路インフラ事業の契約バンドリングという三つの研究領域にまたがる．橋梁の劣化モデル研究では，不確実性を伴う劣化予測に基づく維持管理計画が研究されてきた（Hadjidemetriou et al., 2020）．地域分割研究では，地理的な基本単位を複数の地区へ編成するための方法が体系的に研究されてきた（Kalcsics and Rios-Mercado, 2019）．一方，道路インフラ分野の契約バンドリング研究は，あらかじめ選定された事業群から契約ロットを構成する方法を扱っている（Qiao et al., 2026）．しかし，確率的に発生する橋梁補修需要と契約バンドリングを結び付け，管理エリアの設計問題として扱う枠組みは，確認した範囲では示されていない．
 
 本研究は，確率的劣化に伴う補修需要と契約バンドリングルールを統合した地域分割最適化モデルを構築し，広域連携による契約集約効果を定量的に評価することを目的とする．
 
 本研究の主な貢献は以下の3点である．
 
-**貢献①：確率的補修需要，契約バンドリング，地域分割の統合的定式化．** 確率的維持管理，契約バンドリング，地域分割として個別に扱われてきた三つの問題を，橋梁補修の管理エリア設計という一つの最適化問題として統合する．
+**貢献①：確率的補修需要，契約バンドリング，地域分割の統合的定式化．** 劣化モデル研究，契約バンドリング研究，地域分割研究として個別に扱われてきた三つの問題を，橋梁補修の管理エリア設計という一つの最適化問題として統合する．
 
 **貢献②：橋梁劣化データから調達評価への接続．** 点検データからマルコフ推移確率を推定し，補修需要の発生確率を導出するとともに，地域内橋梁数 $N$ と一契約当たりの同時発注上限 $L$ を引数とする期待契約件数の閉形式 $f(N,L)$ を構築する．これにより，確率的な補修需要を契約集約効果の評価指標へ変換し，地域分割最適化の目的関数に組み込む．
 
@@ -52,10 +52,9 @@
 | [1] | FHWA, 2020 | `fhwafactsheet` | FHWA: Project Bundling Fact Sheet (EDC-5), Federal Highway Administration, U.S. Department of Transportation, 2020. |
 | [2] | FHWA, 2019 | `fhwa2019` | FHWA: Bridge Bundling Guidebook: An Efficient and Effective Method for Maintaining and Improving Bridge Assets, Federal Highway Administration, U.S. Department of Transportation, 2019. |
 | [3] | 国土交通省, 2025 | `mlit2025gunmane` | 国土交通省：地域インフラ群再生戦略マネジメント手引き Ver.1，2025年10月. |
-| [4] | Nakazato et al., 2023 | `nakazato2023`（未登録） | Nakazato, Y., Mizutani, D. and Fukuyama, S.: Optimal Repair Policies for Infrastructure Systems with Life Cycle Cost Minimization and Annual Cost Leveling, Journal of Infrastructure Systems, Vol.29, No.3, 04023021, 2023. https://doi.org/10.1061/JITSE4.ISENG-2169 |
-| [5] | Mizutani et al., 2025 | `mizutani2025`（未登録） | Mizutani, D., Fukuyama, S. and Satsukawa, K.: Optimal road facility spare parts location with continuum approximation, Transportation Research Part C: Emerging Technologies, Vol.174, 105109, 2025. https://doi.org/10.1016/j.trc.2025.105109 |
-| [6] | Kalcsics and Rios-Mercado, 2019 | `kalcsics2019` | Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019. https://doi.org/10.1007/978-3-030-32177-2_25 |
-| [7] | Qiao et al., 2026 | `qiao2026` | Qiao, J. Y., Guo, Y., Seilabi, S., Fricker, J. D. and Labi, S.: A proposed algorithm for identifying heuristic-optimal bundling strategies, Computer-Aided Civil and Infrastructure Engineering, Vol.49, 100100, 2026. https://doi.org/10.1016/j.cacaie.2026.100100 |
+| [4] | Hadjidemetriou et al., 2020 | `hadjidemetriou2020`（未登録） | Hadjidemetriou, G. M., Xie, X. and Parlikad, A. K.: Predictive Group Maintenance Model for Networks of Bridges, Transportation Research Record, Vol.2674, No.4, pp.373--383, 2020. https://doi.org/10.1177/0361198120912226 |
+| [5] | Kalcsics and Rios-Mercado, 2019 | `kalcsics2019` | Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019. https://doi.org/10.1007/978-3-030-32177-2_25 |
+| [6] | Qiao et al., 2026 | `qiao2026` | Qiao, J. Y., Guo, Y., Seilabi, S., Fricker, J. D. and Labi, S.: A proposed algorithm for identifying heuristic-optimal bundling strategies, Computer-Aided Civil and Infrastructure Engineering, Vol.49, 100100, 2026. https://doi.org/10.1016/j.cacaie.2026.100100 |
 
 ---
 
@@ -104,28 +103,18 @@
 - **判断**: 現在の本文を直接支持する。「政策目標として掲げる」よりも、資料自身の定義に沿って「推進している」「連携形態が示されている」と書く方が正確。
 - **原典**: `references/pdf/国交省_地域インフラ群再生戦略マネジメント手引き_本編.pdf`
 
-### [4] Nakazato et al. (2023) — Optimal Repair Policies for Infrastructure Systems
+### [4] Hadjidemetriou et al. (2020) — Predictive Group Maintenance Model for Networks of Bridges
 
-- **本文で支える主張**: 確率的劣化過程をインフラシステムの補修方針最適化に組み込む研究が行われていること。
-- **原文（Summary and Future Tasks）**:
-
-> “It applies a Markov decision process to consider stochastic deterioration processes.”
-
-- **判断**: 確率的劣化過程を補修方針の最適化に組み込むという本文の分野説明を直接支持する。
-- **原典**: https://doi.org/10.1061/JITSE4.ISENG-2169
-
-### [5] Mizutani et al. (2025) — Optimal road facility spare parts location with continuum approximation
-
-- **本文で支える主張**: 道路施設の故障過程を考慮した施設配置最適化が研究されていること。
+- **本文で支える主張**: 不確実性を伴う橋梁劣化モデルを用いて，維持管理の優先順位・時期・グループ化を検討する研究領域が存在すること。
 - **原文（Abstract）**:
 
-> “taking into account the failure processes of expressway facilities.”
+> “The paper presents an approach that prioritizes the maintenance of MSMCN of bridges, using a deterioration model of components with uncertainty.”
 
-- **判断**: 確率的な故障過程と空間的な施設配置計画を接続するという本文の分野説明を直接支持する。本研究とは対象および意思決定変数が異なるため，既往研究章では必要な範囲に限定して位置付ける。
-- **原典**: https://doi.org/10.1016/j.trc.2025.105109
-- **出版社ページ**: https://www.sciencedirect.com/science/article/pii/S0968090X25001135
+- **判断**: 劣化予測と維持管理計画を接続する研究領域の代表例として本文を支持する。同研究のgroup maintenanceはsetup costの共有を扱うが，公共調達上の契約ロット設計を直接扱うものではない。この差異はSection 2で詳述する。
+- **原典**: https://doi.org/10.1177/0361198120912226
+- **著者公開版**: https://www.repository.cam.ac.uk/items/1227977e-b976-40cb-87e2-4050202a29a3
 
-### [6] Kalcsics and Rios-Mercado (2019) — Districting Problems
+### [5] Kalcsics and Rios-Mercado (2019) — Districting Problems
 
 - **本文で支える主張**: districtingでは，地理的な基本単位を複数の地区へ編成する問題が体系的に研究されていること。
 - **原文（Abstract）**:
@@ -136,7 +125,7 @@
 - **原典**: https://doi.org/10.1007/978-3-030-32177-2_25
 - **書誌・Abstract確認**: https://ideas.repec.org/h/spr/sprchp/978-3-030-32177-2_25.html
 
-### [7] Qiao et al. (2026) — A proposed algorithm for identifying heuristic-optimal bundling strategies
+### [6] Qiao et al. (2026) — A proposed algorithm for identifying heuristic-optimal bundling strategies
 
 - **本文で支える主張**: 与えられた道路事業群を組み合わせてbundleを構成する問題であり、確率的劣化による需要発生と管理エリア設計を同時には扱わないこと。
 - **原文（Abstract）**:

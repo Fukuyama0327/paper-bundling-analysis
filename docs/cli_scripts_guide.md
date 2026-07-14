@@ -107,7 +107,8 @@ python scripts\run_gurobi_districting.py --pwl all --cases 25:3 35:3 40:1 --thre
 | `--input` | x-Road原データCSV（必須） |
 | `--output` | 出力CSVパス（必須） |
 | `--prefecture` | 対象都道府県名（デフォルト`宮城県`） |
-| `--boundary` | 行政界シェープファイル（指定時は県境界外を除外、任意） |
+| `--boundary` | 行政界シェープファイル（省略時は`config.SHAPEFILE_PATH`。県境界外を除外） |
+| `--no-boundary` | 行政界チェックをスキップ（県外座標の橋梁が残りN=322が再現できなくなるため、意図的な場合のみ） |
 
 ### `scripts/step3_filter_target_municipalities.py`（6市町村フィルタ、N=322）
 
@@ -146,8 +147,8 @@ python scripts\run_gurobi_districting.py --pwl all --cases 25:3 35:3 40:1 --thre
 
 | オプション | 意味 |
 |---|---|
-| `--input` | Gurobi結果CSV（必須） |
-| `--output` | 再評価後CSVの出力先（必須） |
+| `--input` | Gurobi結果CSV（デフォルト`data/processed/optimization_results_closed_form_20251207_200558.csv`） |
+| `--output` | 再評価後CSVの出力先（デフォルト`data/processed/optimization_results_exact_objective.csv`。`plot_optimization_results.py`のデフォルト入力と同一パス） |
 | `--bundle-limit` | 契約バンドリング上限L（デフォルト5） |
 
 ### `scripts/generate_expected_contracts.py`（期待契約件数の系列生成）

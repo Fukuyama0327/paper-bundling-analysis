@@ -1,0 +1,362 @@
+% !TEX program = lualatex
+% !TEX root = main.tex
+
+\documentclass[Journal,letterpaper,InsideFigs,NoLineNumbers]{ascelike-new}
+
+% Japanese manuscripts should be compiled with LuaLaTeX.
+\usepackage[haranoaji]{luatexja-preset}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[colorlinks=true,citecolor=red,linkcolor=black,urlcolor=blue]{hyperref}
+
+\newcommand{\argmin}{\mathop{\rm arg~min}\limits}
+\newcommand{\E}{\mathrm{E}}
+
+\title{広域連携による橋梁群の維持管理最適化に向けた地域分割と集約効果の定量分析}
+
+\author{
+福山 峻一\thanks{非会員，東北大学大学院工学研究科（〒980-8579 宮城県仙台市青葉区荒巻字青葉6-6）E-mail: fukuyama.shunichi.p3@dc.tohoku.ac.jp}
+\and
+水谷 大二郎\thanks{正会員，東北大学大学院工学研究科 准教授（〒980-8579 宮城県仙台市青葉区荒巻字青葉6-6）E-mail: daijiro.mizutani.a5@tohoku.ac.jp}
+}
+
+\NameTag{Fukuyama}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+本研究は，橋梁群の効率的な維持管理を目的とした地域分割最適化問題について検討する．老朽化インフラの増加と担い手不足への対応として，国土交通省が推進する「地域インフラ群再生戦略マネジメント（群マネ）」では，面的・群的視点に基づく広域的な維持管理体制の構築が求められている．本研究では，広域連携エリア内での橋梁補修の同時発注を前提とし，確率的劣化の下で計画期間中に発生する契約件数と，連携範囲の広さを考慮し，そのバランスを最適化するモデルを構築する．さらに，実橋梁データを用いた数値実験により，地域分割と集約効果の特性を分析する．本研究は，群マネの有効性を定量的に評価し，最適な広域連携のあり方を検討するうえで有用な数理的基盤を提供する．
+\end{abstract}
+
+\begin{center}
+\textbf{Key Words:} districting optimization, infrastructure group asset management, contract bundling, EBPM
+\end{center}
+
+\section{はじめに}
+
+複数の橋梁補修案件を単一契約にまとめる契約バンドリング（contract bundling）は，個別に発注される複数の案件を一つの契約単位に集約する手法である．米国連邦道路局（Federal Highway Administration: FHWA）は，類似案件のバンドリングが，規模の経済によるコスト削減や調達手続の効率化に寄与するとしている\cite{fhwafactsheet}．本研究では，これらの効果のうち，補修需要をより少ない契約単位に集約できる可能性に着目する．
+
+バンドリングの機会は，契約対象とし得る範囲内で，同じ期間に補修を必要とする橋梁がどの程度発生するかに依存する．日本では，市区町村がそれぞれの管理する橋梁について補修工事を発注しているため，同一契約に含め得る橋梁の範囲は，原則として各主体の管理区域に限定される．このため，管理橋梁数が少ない主体ほど，同一期間に発生する補修需要を一つの契約に集約する機会が限られる．また，地理的に近接する橋梁であっても，管理主体が異なれば，通常は同一契約の対象とならない．
+
+この問題への対応として，複数の管理主体が行政界を越えて連携し，橋梁群を一体的に管理・発注することが考えられる．米国Nebraska州では，個々の郡では橋梁バンドリングの便益を十分に得られない場合があることから，複数郡が行政界を越えて橋梁を一つの事業に集約する取組が実施されている\cite{fhwa2019}．
+
+日本では，国土交通省が「地域インフラ群再生戦略マネジメント（群マネ）」を推進し，自治体の枠を越えた広域連携をその一類型として示している\cite{mlit2025gunmane}．
+
+しかし，複数自治体の橋梁を一体的に管理・発注する場合に，どのように管理エリアを設計すれば，地理的制約の下で期待契約件数を最小化できるかは，明らかになっていない．
+
+この問いは，インフラの確率的維持管理，地域分割，道路インフラ事業の契約バンドリングという三つの研究領域にまたがる．インフラ維持管理研究では，確率的な劣化・故障過程を維持管理方針や施設配置の最適化に組み込む方法が研究されてきた\cite{nakazato2023,mizutani2025}．地域分割研究では，地理的な基本単位を複数の地区へ編成するための方法が体系的に研究されてきた\cite{kalcsics2019}．一方，道路インフラ分野の契約バンドリング研究は，あらかじめ選定された事業群から契約ロットを構成する方法を扱っている\cite{qiao2026}．しかし，確率的に発生する橋梁補修需要と契約バンドリングを結び付け，管理エリアの設計問題として扱う枠組みは，確認した範囲では示されていない．
+
+本研究は，確率的劣化に伴う補修需要と契約バンドリングルールを統合した地域分割最適化モデルを構築し，広域連携による契約集約効果を定量的に評価することを目的とする．
+
+本研究の主な貢献は以下の3点である．
+
+\begin{itemize}
+\item \textbf{確率的補修需要，契約バンドリング，地域分割の統合的定式化．} 確率的維持管理，契約バンドリング，地域分割として個別に扱われてきた三つの問題を，橋梁補修の管理エリア設計という一つの最適化問題として統合する．
+\item \textbf{橋梁劣化データから調達評価への接続．} 点検データからマルコフ推移確率を推定し，補修需要の発生確率を導出するとともに，地域内橋梁数 $N$ と一契約当たりの同時発注上限 $L$ を引数とする期待契約件数の閉形式 $f(N,L)$ を構築する．これにより，確率的な補修需要を契約集約効果の評価指標へ変換し，地域分割最適化の目的関数に組み込む．
+\item \textbf{実橋梁データに基づく広域連携効果の定量評価．} 宮城県内の橋梁データを用いて，管理橋梁数，同時発注上限，地域数および距離制約が期待契約件数に与える影響を体系的に分析し，現行の管理単位との比較を通じて契約集約効果を示す．
+\end{itemize}
+
+\section{既往研究}
+
+インフラ管理において，管理エリアを設定してその内部で工事を発注する体制は国際的に広く採用されている．米国では，各州の道路局（State Department of Transportation, State DOT）が地区（District）単位でエリアを空間分割し，各地区が管轄内の道路・橋梁工事を発注する体制を取っている．例えばフロリダ州DOTは7地区に分割されており，各地区あたり800〜1,300橋を管理し，面積は8,600〜30,700 km\(^2\)に及ぶ\cite{fhwa2019}．連邦道路局（Federal Highway Administration, FHWA）は連邦機関として各州のプログラムを監督・助言する役割であり，直接工事を発注するのはあくまでState DOTである\cite{fhwafactsheet}．我が国の国道管理でも，地方整備局から国道事務所単位でエリアを分割して発注する体制が採用されている．日本の市町村では，市町村が橋梁等の管理主体となり，管轄橋梁数は平均50〜150橋程度にとどまる\cite{mlit2025gunmane}．このような「管理エリアの設定＋エリア内での一括発注」は普遍的な仕組みであり，エリアの最適な設計とその内部での発注集約の両方が意思決定問題となる．
+
+米国State DOTのDistrictでは800〜1,300橋を対象として発注単位を設計できるのに対し，日本の市町村は50〜150橋程度にとどまる．このような小規模主体が単独で発注を続けると，一度に補修対象となる橋梁が1〜2本というケースが頻発し，そもそも一括化の余地が生まれにくい\cite{shikoku2019}．広域連携によって複数市町村の橋梁を一括管理することで，初めて契約バンドリングの効果が発揮される構造になる\cite{nara2023,mlit2024senkojirei}．国土交通省が推進する群マネ\cite{mlit2025gunmane}は，こうした広域的・群的な維持管理体制の構築を政策目標として掲げており，本研究はその定量的評価の基盤を提供するものである．
+
+地域分割（districting）問題は，行政計画，選挙区割り，医療アクセスなど，多様な分野において最適な空間単位の構築を目的として研究が行われてきた．例えば，Webster\cite{webster2013}は政治区割り問題を対象に，従来の選挙区割り基準（人口均等性，コンパクト性，連続性，利害共同体の維持など）の妥当性を再評価し，より公平で理想的な区割りのあり方を論じている．また，混合整数計画法（Mixed Integer Programming, MIP）を用いた地域分割手法は，コンパクト性・均衡性・接続性・階層構造といった複雑な制約条件を柔軟に扱える点で優れており，従来のクラスタリング手法では困難であった現実的な空間条件の考慮を可能にする．Kalcsics and Rios-Mercado\cite{kalcsics2019}は，地域分割問題における主要な制約（均衡性・接続性・コンパクト性など）を整理し，これらをMIPにより柔軟に定式化できることを示している．さらに，Novaes et al.\cite{novaes2010}は，物流配送を対象に連続的な地域分割モデルを構築し，Power Voronoi図を用いて地理的障害（河川・道路など）を考慮した最適分割を実現した．
+
+一方，橋梁や道路を対象としたバンドリング（bundling）に関する研究も進展している．Qiao\cite{qiao2019}は，インディアナ州の道路・橋梁プロジェクトを対象に，バンドルが単価，工期，交通維持費，コスト超過リスク，入札者数などに与える影響を統計的に分析し，これらの複数要因を統合的に扱う多目的最適化モデルを構築した．バンドリング最適化の数理的枠組みとして，Qiao et al.\cite{qiao2026}は道路工事プロジェクト群を組合せ最適化問題として定式化し，貪欲ヒューリスティックにより既存の実務的バンドリング政策を上回る解を示した．しかし同研究では，補修需要の確率的発生過程は扱われておらず，プロジェクトリストは所与として与えられる．また空間的地域分割は意思決定の対象に含まれず，単一発注主体（State DOT）内の内部意思決定を前提としている．同様に空間的なグループ化の効果に着目した研究として，Gooijer et al.\cite{gooijer2024}は，オランダの橋梁約85,000橋を対象に，地理的近接性・工法・建設年代に基づく複数のクラスタリング戦略をEntity-based System Dynamicsによるシミュレーションで比較し，小規模な地理的クラスタ（平均1.9橋程度）が維持管理容量の安定化に優れることを示した．しかし同研究が比較するのはあらかじめ定義されたクラスタ戦略の効果であり，クラスタそのものをどう形成すべきかを解く最適化ではない．Assaf and Assaad\cite{assaf2023}は，実際のインフラプロジェクトを分析し，バンドリング戦略に影響を与える主要な意思決定要因として，地理的近接性，工種や規模の類似性，事業時期の整合性などを抽出・体系化した．さらに，Assaf et al.\cite{assaf2024}では，実データに基づきプロジェクト・バンドリングに内在する機会（効率化，コスト削減）と課題（調達の複雑化，リスクの集中）をモデル化し，要因間の連動パターンを明らかにすることで，より効果的な意思決定とリスク管理を支援する手法を提示している．また，FHWAは複数の保存・補修・更新プロジェクトを単一の契約に集約するプロジェクトバンドリングが，規模の経済を通じてコスト削減と調達効率化をもたらすことを示している\cite{fhwafactsheet}．四国地方整備局\cite{shikoku2019}は，橋梁補修工事発注に際して，工事範囲の設定，工期，発注区分，予定価格等に関する実務的な留意事項を整理し，橋梁補修工事特有の発注上の課題を体系的に示している．
+
+これらの既往文献を総合すると，バンドリングによる効果とデメリットは表\ref{tab:bundling}のように整理できる．
+
+\begin{table}[h]
+\centering
+\caption{バンドリングによる効果とデメリット}
+\label{tab:bundling}
+\begin{tabular}{p{0.16\linewidth}p{0.16\linewidth}p{0.56\linewidth}}
+\toprule
+区分 & 関係者 & 効果・デメリット \\
+\midrule
+効果 & 発注者側 & 契約数や契約にかかる手間の削減，リソース配分の効率化，規模の経済による単価の削減 \\
+効果 & 受注者側 & 性能規定型の維持管理の実現，安定した事業量の確保，専門性の向上 \\
+デメリット & 発注者側 & 広域化に伴う行政手続きの複雑化，入札者減少による競争性低下，調達・品質リスクの集中 \\
+デメリット & 受注者側 & 現場の地理的分散による交通維持費・管理費の増加，生産性低下，一般管理費の増大 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+地域分割とバンドリングの研究はそれぞれ独立して発展してきたが，両者を統合的に最適化する枠組みは十分に確立されていない．既存のバンドリング研究は，所与のプロジェクトをどの契約にまとめるかを主に扱う一方で，維持管理分野において将来どの橋梁で補修需要が発生するかという確率的過程を内生化していない．また，地域分割研究は，空間的な割当や管理区域の設計を扱うが，契約バンドリングによる補修需要の集約効果を目的関数として組み込む研究は限られている．本研究の新規性は以下の3点に集約される．
+
+\begin{itemize}
+\item \textbf{新規性①：} 地域分割問題と契約バンドリング最適化の初めての統合的定式化．エリアの空間設計と発注集約の両方を同一の数理的枠組みで扱う．
+\item \textbf{新規性②：} 確率的劣化・補修を考慮した長期維持管理を扱う初めての枠組みの提案．既存のバンドリング最適化では補修需要が所与であるのに対し，本研究ではマルコフ劣化モデルから需要を確率的に内生化する（需要を所与としない）．
+\item \textbf{新規性③：} 実データから劣化確率を推定し，閉形式の期待契約件数関数 \(f(N,L)\) を理論的に導出．バンドリング上限 \(L\) に対する感度分析が可能になり，スケールメリットが逓減する閾値を解析的に把握できる．
+\end{itemize}
+
+\section{モデル構築}
+
+\subsection{モデルの概要}
+
+橋梁の集合を \(I\)，地域候補の集合を \(K\) とし，計画期間は離散時間集合 \(T\) で表す．地域 \(k\in K\) に含まれる橋梁集合を \(I_k\) とし，橋梁 \(i\in I\) を地域 \(k\) に割り当てる二値変数を \(x_{ik}\) と定義する．地域 \(k\) に束ねられる橋梁本数を \(N_k\) とおき，期間中に地域で発生する契約発注の期待件数を \(f(N_k,L)\) によって表す．ここで，\(L\) は1契約で同時発注できる橋梁数の上限である．
+
+本研究では，広域連携による集約のメリットを期待契約件数の削減として扱い，同時に，地域の広がりに伴う地理的な非効率を地域内最大距離の上限制約によって表現する．期待契約件数は，地域内で発生する補修需要が契約バンドリングによりどの程度少ない契約単位に集約されるかを表す指標である．そのため，地域分割の目的は単に空間的にまとまった区域を作ることではなく，確率的に発生する補修需要を同一地域内で束ねやすい区域を設計することである．劣化に起因する補修需要は各橋梁の確率過程から与えられ，運用上は健全度III到達を補修トリガーとしてみなす．以上を定式化し，最適な地域分割を混合整数計画により求める．
+
+\subsection{MIPモデルの定式化}
+
+地域分割の最適化問題は，橋梁の地域割当を表す二値変数 \(x_{ik}\) および，橋梁ペアの同居を表す補助変数 \(y_{ijk}\) を用いた混合整数計画問題として定式化する．目的は，地域ごとの束ね本数 \(N_k\) に対する期待契約件数 \(f(N_k,L)\) の総和を最小化することである．これにより，広域連携による集約効果を反映した効率的な地域分割を導出する．
+
+本研究では距離制約を制約条件として扱うが，この設計判断は2段階の検討を経ている．第1段階として，地域の広がりによる地理的非効率を目的関数に組み込む案を検討した．
+\[
+\min \sum_{k \in K} f(N_k,L) + \alpha \max_{k \in K} \max_{i,j \in I_k} d_{ij}
+\]
+ここで第2項は各地域内の橋梁間最大距離，\(\alpha\) は地理的非効率に対する重みパラメータである．しかし，契約件数1件の削減と距離1 kmの増加をどのように換算するかの根拠が実務上明確ではなく，分析結果が \(\alpha\) の設定に依存するという問題がある．そこで第2段階として，\(\varepsilon\) 制約法により距離項を制約条件として分離した（\(\alpha \to D\) への変換）．これにより目的関数は期待契約件数の最小化のみとなり，距離制約 \(D\) を政策変数として感度分析できる構造になる．どの程度の広域連携範囲（\(D\) km以内）を許容すれば期待契約件数がどれだけ削減されるかを，\(\alpha\) への依存なしに明示できる．
+
+\[
+\min \quad \sum_{k\in K} f(N_k,L)
+\]
+
+subject to
+\[
+N_k = \sum_{i\in I} x_{ik}
+\quad \forall k\in K,
+\]
+\[
+\sum_{k\in K} x_{ik} = 1
+\quad \forall i\in I,
+\]
+\[
+\sum_{i\in I} x_{ik} \geq 1
+\quad \forall k\in K,
+\]
+\[
+y_{ijk} \leq x_{ik}
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+y_{ijk} \leq x_{jk}
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+y_{ijk} \geq x_{ik}+x_{jk}-1
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+d_{ij}y_{ijk} \leq D
+\quad \forall i,j\in I,\ \forall k\in K,
+\]
+\[
+x_{ik}\in\{0,1\},\quad y_{ijk}\in\{0,1\}.
+\]
+
+上式の目的関数は，地域 \(k\) に束ねられる橋梁数に対して推定された期待契約件数関数の総和である．第1制約は \(N_k\) の定義式，第2・第3制約はそれぞれ橋梁の一意割当と地域の非空条件を示す．第4～第6制約は補助変数 \(y_{ijk}\) と橋梁割当変数 \(x_{ik}\) の論理的関係を表し，第7制約は地域内最大距離を \(D\) 以下に制限する上限制約である．この定式化により，連携範囲を政策変数 \(D\) として調整しながら，地域分割と集約効果のトレードオフを数理的に評価する．
+
+\subsection{劣化過程のモデル化}
+
+橋梁の劣化進行は，時間経過に応じて健全度が段階的に低下する確率過程として表される．本研究では，津田ら\cite{tsuda2005}の手法に基づき，定期点検データからマルコフ推移確率を推定するモデルを用いる．健全度状態を \(c\in\{1,2,3\}\) とし，時点 \(t\) における橋梁 \(i\) の状態確率ベクトルを
+\[
+{\mathbf \pi}_{i,t}
+=
+\left(
+\pi_{i,t}^{(1)},\pi_{i,t}^{(2)},\pi_{i,t}^{(3)}
+\right)
+\]
+と定義する．劣化過程は，以下のマルコフ遷移式で表される．
+\[
+{\mathbf \pi}_{i,t+1}
+=
+{\mathbf \pi}_{i,t}P .
+\]
+ここで，\(P\) は推移確率行列である．状態は非可逆的に進行するものとし，健全度が改善する推移は考慮しない．また，状態III以上を補修発生のトリガーとして扱う．
+
+点検データには健全度IVへの遷移が観測されるため，推移確率行列の推定は4状態（I，II，III，IV）で行う．その上で，状態IVへの推移確率を状態IIIに加算することで3状態モデルに集約する．具体的には，4状態推移行列の各行において状態IVへの推移確率を状態IIIへの推移確率に加算し，状態IVを独立した状態として扱わない形に変換する．これにより，状態III以上を要補修状態として一括して扱うことができ，閉形式の期待契約件数関数で用いる単一橋梁補修確率 \(q\) の導出も簡潔になる．
+
+\subsection{閉形式の期待契約件数関数}
+
+地域内に \(N\) 橋梁があり，各橋梁が1期間に独立に確率 \(q\) で補修対象になると仮定する．このとき，地域内で同一期間に補修対象となる橋梁数 \(X\) は
+\[
+X \sim {\rm Binomial}(N,q)
+\]
+に従う．補修対象橋梁数が \(n\) 本の場合，1契約で同時発注できる橋梁数の上限を \(L\) とすれば，契約件数は
+\[
+\left\lceil \frac{n}{L} \right\rceil
+\]
+で表される．したがって，地域内橋梁数 \(N\) と同時発注上限 \(L\) に対する期待契約件数は，以下の閉形式で与えられる．
+\[
+f(N,L)
+=
+\sum_{n=0}^{N}
+{N\choose n}q^n(1-q)^{N-n}
+\left\lceil \frac{n}{L} \right\rceil .
+\]
+ただし，\(n=0\) のときは契約件数を0とする．この式は，補修需要の確率的発生過程と，同時発注上限に基づく契約バンドリングルールから直接導かれる．そのため，\(q\) と \(L\) が解釈可能なパラメータとして明示され，地域分割最適化の目的関数としての意味も明確である．
+
+ここで，単一橋梁の補修確率 \(q\) は，推移確率行列 \(P\) から以下の手順で求める．まず，補修不要状態（状態IおよびII）の間の推移行列を \(T\)，補修状態（状態III）への推移確率ベクトルを \(r\) と定義し，
+\[
+P =
+\left(
+\begin{array}{cc}
+T & r \\
+\mathbf{0} & 1
+\end{array}
+\right)
+\]
+と分解する．次に，補修不要状態における定常的な滞在分布 \(\vec{\pi}\) を
+\[
+\vec{\pi}
+=
+\frac{\vec{e}_1^\top (I-T)^{-1}}
+{\vec{e}_1^\top (I-T)^{-1} \vec{1}}
+\]
+により算出し，単一橋梁が1期間に補修対象となる確率を
+\[
+q = \vec{\pi} r
+\]
+と定義する．4章で示す推移確率行列を用いると \(q=0.012329\) が得られる．
+
+同時発注上限 \(L\) は，1契約にまとめられる橋梁数の政策的上限を表すパラメータである．\(L\) を大きくするほど複数の補修需要を1契約に集約しやすくなり期待契約件数は減少するが，その効果は逓減する．本研究の主分析では実務的な制約と既往検討との整合を踏まえ \(L=5\) を基準値として用いる．感度分析では \(L=3,7\) の場合も示し，同時発注上限が期待契約件数に与える影響を比較する．
+
+\section{数値計算}
+
+\subsection{使用データの概要}
+
+本章では，前章で構築したモデルの有効性を検証するため，実橋梁データを用いた数値計算を行う．データは，全国道路施設点検データベース\cite{roadstructuresdb}から取得した宮城県内に存在する橋梁のうち，鉄筋コンクリート（RC）橋を対象とした．また，劣化過程のマルコフモデルを構築するために，道路メンテナンス年報に掲載されている「点検実施施設名一覧データ」\cite{roadmaintenance}を利用し，過年度における健全度変化を抽出した．
+
+\subsection{マルコフ推移確率の推定}
+
+過年度の橋梁点検データに基づき，3章で定義した方法に従ってマルコフ推移確率行列を推定した．推定にあたっては，架設後30年未満の橋梁について架設時の健全度をIと仮定し，初期状態を補完した．さらに，前回点検に比べて健全度が回復している事例は，点検誤差または補修履歴未反映の可能性を考慮し，分析対象から除外した．これにより，観測データに基づく健全度推移のサンプルを整備し，状態遷移頻度表を作成した．表\ref{tab:transition_counts}に遷移前健全度と遷移後健全度の推移の集計結果を示す．
+
+\begin{table}[h]
+\centering
+\caption{健全度の遷移の集計}
+\label{tab:transition_counts}
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{4}{c}{遷移後} \\
+\cmidrule(lr){2-5}
+遷移前 & I & II & III & IV \\
+\midrule
+I & 949 & 1323 & 82 & 0 \\
+II & 0 & 4703 & 372 & 2 \\
+III & 0 & 0 & 203 & 2 \\
+IV & 0 & 0 & 0 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図1 点検間隔の分布（仮置き）}}
+\caption{点検間隔の分布}
+\label{fig:inspection_interval}
+\end{figure}
+
+状態IVを吸収状態とし，補修判定を状態IIIで行うため，状態IVへの推移確率をIIIに加算して簡略化した．これにより，吸収化した3状態マルコフ連鎖の推移確率行列は次式のようになる．
+\[
+P =
+\left(
+\begin{array}{ccc}
+0.9132082586632038 & 0.08616179766540086 & 0.00062994367139535 \\
+0 & 0.9857337922074478 & 0.01426620779255218 \\
+0 & 0 & 1
+\end{array}
+\right).
+\]
+この推移確率行列から，単一橋梁の補修確率は \(q=0.012329120856\) と算定される．
+
+\subsection{期待契約件数関数の検証}
+
+前節で得られた推移確率行列を用いて，モンテカルロ・シミュレーションにより橋梁群の劣化進行を再現した．シミュレーションでは，計画期間を \(T=100\)，試行回数を \(|S|=10000\)，一括発注の上限橋梁数を \(L=5\) と設定した．これにより，確率的な劣化進行のばらつきを考慮したうえで，地域に束ねる橋梁数と地域ごとの期待契約件数の関係を算定した．
+
+図\ref{fig:expected_contracts}に，閉形式 \(f(N,L)\) とモンテカルロ・シミュレーション結果の比較を示す．主分析で用いる \(L=5\) では，平均絶対誤差は0.005193，平均相対誤差は0.746135\%，RMSEは0.005384であり，閉形式の期待契約件数関数がシミュレーション結果を十分に近似していることが確認される（平均相対誤差0.75\%以内）．
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図2 期待契約件数関数の検証結果（仮置き）}}
+\caption{期待契約件数関数の検証結果}
+\label{fig:expected_contracts}
+\end{figure}
+
+\subsection{地域分割最適化の実施}
+
+前節で得られた期待契約件数関数を基に，構築した混合整数計画モデルを用いて地域分割の最適化を行った．対象は宮城県内市区町村が管理する橋梁であり，橋梁位置情報から算出した距離行列をもとに，地域ごとの最適割当を求めた．目的関数には，3章で定義した契約件数最小化モデルを用い，地域数および最大距離制約を変化させて最適解を比較した．
+
+最適化の結果，最大距離制約 \(D\) を緩和することで，目的関数値は概ね減少傾向を示している．これは，地域間の連携範囲を拡大することで，一括発注による集約効果が高まり，契約件数を削減できることを意味している．また，地域数 \(M\) を減少させた場合にも同様に目的関数値が低下し，一定規模までは地域統合による発注効率の向上が得られることが分かった．一方で，距離制約を過度に緩和すると，現場移動や管理上の負担が増える可能性がある．したがって，本結果は，単に全域を一括化することが望ましいという結論ではなく，距離制約と発注効率のトレードオフを定量的に比較するための基礎を与える．
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.75\linewidth}{\centering 図3 距離制約ごとの目的関数の最適値（仮置き）}}
+\caption{距離制約ごとの目的関数の最適値}
+\label{fig:optimization_results}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{現行管理と最適化結果の比較}
+\label{tab:optimization_results}
+\begin{tabular}{lrr}
+\toprule
+条件 & 目的関数値 & 現行管理比の低減率 \\
+\midrule
+既存の管理 & 2.5241 & 0.0\% \\
+\(D=15\) km, \(M=6\) & 2.0883 & 17.3\% \\
+\(D=20\) km, \(M=5\) & 1.7911 & 29.0\% \\
+\(D=25\) km, \(M=3\) & 1.5676 & 37.9\% \\
+\(D=30\) km, \(M=3\) & 1.4161 & 43.9\% \\
+\(D=35\) km, \(M=3\) & 1.2620 & 50.0\% \\
+\(D \geq 40\) km, \(M=1\) & 1.1933 & 52.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{終わりに}
+
+本研究では，広域連携による橋梁群の維持管理最適化に向けて，地域分割と集約効果を統合的に扱う混合整数計画モデルを構築した．マルコフ劣化モデルを用いた確率的補修需要の下で，地域に含まれる橋梁数ごとの期待契約件数を算定し，それを目的関数に組み込むことで，広域的な集約と地理的制約のトレードオフを定量的に評価した．
+
+宮城県内の実橋梁データを対象とした数値解析の結果，地域数および距離上限の変化に応じて，発注効率の改善効果が確認された．また，現行の行政単位による管理体制と比較して，提案手法は期待契約件数を削減できる可能性を示した．
+
+今後の課題としては，より実務的な契約一括化ロジックの反映，距離的要因以外の広域化による影響の定量化，より広域的地域スケールにおける最適化計算の実施，橋梁特性ごとのグルーピングが発注効率に及ぼす影響の分析などが挙げられる．
+
+\begin{thebibliography}{99}
+\bibitem{webster2013}
+Webster, G. R.: Reflections on current criteria to evaluate redistricting plans, Political Geography, Vol.32, No.1, pp.3--14, 2013.
+\bibitem{kalcsics2019}
+Kalcsics, J. and Rios-Mercado, R. Z.: Districting Problems, Location Science, Springer International Publishing, pp.705--743, 2019.
+\bibitem{novaes2010}
+Novaes, A. G. N., Frazzon, E. M., Scholz-Reiter, B. and Lima Jr., O. F.: A continuous districting model applied to logistics distribution problems, Proceedings of the XVI International Conference on Industrial Engineering and Operations Management, Sao Carlos, Brazil, 2010.
+\bibitem{qiao2019}
+Qiao, Y.: Bundling effects on contract performance of highway projects: quantitative analysis and optimization framework, Ph.D. Dissertation, Purdue University, 2019.
+\bibitem{qiao2026}
+Qiao, J. Y., Guo, Y., Seilabi, S., Fricker, J. D. and Labi, S.: A proposed algorithm for identifying heuristic-optimal bundling strategies, Computer-Aided Civil and Infrastructure Engineering, Vol.49, 100100, 2026.
+\bibitem{nakazato2023}
+Nakazato, Y., Mizutani, D. and Fukuyama, S.: Optimal Repair Policies for Infrastructure Systems with Life Cycle Cost Minimization and Annual Cost Leveling, Journal of Infrastructure Systems, Vol.29, No.3, 04023021, 2023. \url{https://doi.org/10.1061/JITSE4.ISENG-2169}
+\bibitem{mizutani2025}
+Mizutani, D., Fukuyama, S. and Satsukawa, K.: Optimal road facility spare parts location with continuum approximation, Transportation Research Part C: Emerging Technologies, Vol.174, 105109, 2025. \url{https://doi.org/10.1016/j.trc.2025.105109}
+\bibitem{assaf2023}
+Assaf, G. and Assaad, R. H.: Key decision-making factors influencing bundling strategies: analysis of bundled infrastructure projects, Journal of Infrastructure Systems, Vol.29, No.2, 2023.
+\bibitem{assaf2024}
+Assaf, G., Assaad, R. H. and Karaa, F.: Identifying the opportunities and challenges of project bundling: modeling and discovering key patterns using unsupervised machine learning, Journal of Infrastructure Systems, Vol.30, No.1, 2024.
+\bibitem{fhwa2019}
+FHWA: Bridge Bundling Guidebook: An Efficient and Effective Method for Maintaining and Improving Bridge Assets, Federal Highway Administration, U.S. Department of Transportation, 2019.
+\bibitem{tsuda2005}
+津田尚胤，貝戸清之，青木一也，小林潔司：橋梁劣化予測のためのマルコフ推移確率の推定，土木学会論文集，No.801/I-73，pp.69--82，2005.
+\bibitem{roadstructuresdb}
+全国道路施設点検データベース，\url{https://road-structures-db.mlit.go.jp}.
+\bibitem{roadmaintenance}
+道路メンテナンス年報 平成26年度--令和6年度，\url{https://www.mlit.go.jp/road/sisaku/yobohozen/yobohozen_maint_index.html}.
+\bibitem{mlit2025gunmane}
+国土交通省：地域インフラ群再生戦略マネジメント手引き Ver.1，2025年10月.
+\bibitem{shikoku2019}
+四国地方整備局：橋梁補修工事発注に際しての留意事項（案），2019年8月.
+\bibitem{fhwafactsheet}
+FHWA: Project Bundling Fact Sheet (EDC-5), Federal Highway Administration, U.S. Department of Transportation, 2020.
+\bibitem{mlit2024senkojirei}
+国土交通省：先行事例調査（広域連携・多分野連携・事業者連携・データ連携），群マネ合同検討会参考資料1，令和6年12月.
+\bibitem{nara2023}
+浦井和弘（奈良県県土マネジメント部道路マネジメント課）：「奈良モデル」における広域連携の取組について～道路インフラの長寿命化に向けた支援～，包括的民間委託等導入に関する地方公共団体向けセミナー資料，2023年5月.
+\bibitem{gooijer2024}
+Gooijer, N. J. C.: Entity-based System Dynamics for Bridge Asset Management: Exploring the Effects of Spatial Maintenance Cluster Strategies on Infrastructure System Performance, MSc Thesis, Delft University of Technology, 2024.
+\end{thebibliography}
+
+\end{document}
