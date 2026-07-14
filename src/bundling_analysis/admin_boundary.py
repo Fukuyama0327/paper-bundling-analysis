@@ -68,6 +68,52 @@ def load_admin_boundary(
     return unary_union(dissolved.geometry)
 
 
+def load_admin_boundaries_gdf(
+    shapefile_path: str | Path,
+    prefecture: str = "宮城県",
+    municipalities: list[str] | None = None,
+    encoding: str = "shift_jis",
+):
+    """市区町村別ポリゴンの GeoDataFrame と、それらを結合した union を返す。
+
+    ``load_admin_boundary`` は dissolve 済みの単一ポリゴンを返すが、地図の背景に
+    市町境界線を描いたり市町別に扱ったりするには市区町村単位のポリゴンが要る。
+    ここでは ``N03_004``（市区町村名）ごとに dissolve した1行=1市区町村の
+    GeoDataFrame（EPSG:4326）と、全体の union（クリップ用、shapely geometry）を返す。
+    `20251206.ipynb` cell 37 の ``N03_001``/``N03_004`` フィルタと同じ絞り込み。
+
+    Returns
+    -------
+    (GeoDataFrame, shapely geometry) のタプル。該当が無い場合は (None, None)。
+    """
+    import geopandas as gpd
+    from shapely.ops import unary_union
+
+    path = Path(shapefile_path)
+    if not path.exists():
+        raise FileNotFoundError(f"行政界ファイルが見つかりません: {path}")
+
+    try:
+        gdf = gpd.read_file(path, encoding=encoding)
+    except UnicodeDecodeError:
+        gdf = gpd.read_file(path, encoding="utf-8")
+
+    if gdf.crs is not None and gdf.crs.to_string().upper() not in ("EPSG:4326", "CRS:84", "CRS84"):
+        gdf = gdf.to_crs(epsg=4326)
+
+    if "N03_001" in gdf.columns:
+        gdf = gdf[gdf["N03_001"] == prefecture]
+    if municipalities is not None and "N03_004" in gdf.columns:
+        gdf = gdf[gdf["N03_004"].isin(municipalities)]
+    if gdf.empty:
+        return None, None
+
+    if "N03_004" in gdf.columns:
+        gdf = gdf.dissolve(by="N03_004", as_index=False)
+    union = unary_union(gdf.geometry)
+    return gdf, union
+
+
 def filter_points_within(df, boundary, lat_col: str = "緯度", lon_col: str = "経度"):
     """境界ポリゴン内の行だけを残した DataFrame と除外件数を返す（cell 9 由来）。"""
     import geopandas as gpd
