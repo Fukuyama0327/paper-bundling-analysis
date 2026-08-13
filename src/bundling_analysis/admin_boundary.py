@@ -17,6 +17,35 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def read_boundary_file(path: Path, encoding: str = "shift_jis"):
+    """行政界ファイルを GeoDataFrame として読む（読み込み経路の違いを吸収する）。
+
+    ``geopandas.read_file`` は環境によって内部で fiona を使うが、古い geopandas
+    （〜0.11）は fiona 1.10 で廃止された ``fiona.path`` を参照するため
+    ``AttributeError`` で落ちる。その場合は pyogrio で直接読み直す。
+    pyogrio は geopandas 1.x の既定エンジンでもあり、同じ GeoDataFrame を返す。
+
+    どちらも使えない場合は、元の例外に対処方法を添えて送出する。
+    """
+    import geopandas as gpd
+
+    try:
+        try:
+            return gpd.read_file(path, encoding=encoding)
+        except UnicodeDecodeError:
+            return gpd.read_file(path, encoding="utf-8")
+    except AttributeError as exc:
+        try:
+            import pyogrio
+        except ImportError:
+            raise RuntimeError(
+                f"行政界ファイルを読めません（{exc}）。geopandas と fiona の版が"
+                " 噛み合っていない可能性がある。geopandas>=1.0 に更新するか、"
+                " pyogrio を導入すること。"
+            ) from exc
+        return pyogrio.read_dataframe(path)
+
+
 def load_admin_boundary(
     shapefile_path: str | Path,
     prefecture: str = "宮城県",
@@ -49,10 +78,7 @@ def load_admin_boundary(
     if not path.exists():
         raise FileNotFoundError(f"行政界ファイルが見つかりません: {path}")
 
-    try:
-        gdf = gpd.read_file(path, encoding=encoding)
-    except UnicodeDecodeError:
-        gdf = gpd.read_file(path, encoding="utf-8")
+    gdf = read_boundary_file(path, encoding)
 
     if gdf.crs is not None and gdf.crs.to_string().upper() not in ("EPSG:4326", "CRS:84", "CRS84"):
         gdf = gdf.to_crs(epsg=4326)
@@ -93,10 +119,7 @@ def load_admin_boundaries_gdf(
     if not path.exists():
         raise FileNotFoundError(f"行政界ファイルが見つかりません: {path}")
 
-    try:
-        gdf = gpd.read_file(path, encoding=encoding)
-    except UnicodeDecodeError:
-        gdf = gpd.read_file(path, encoding="utf-8")
+    gdf = read_boundary_file(path, encoding)
 
     if gdf.crs is not None and gdf.crs.to_string().upper() not in ("EPSG:4326", "CRS:84", "CRS84"):
         gdf = gdf.to_crs(epsg=4326)
