@@ -1,4 +1,4 @@
-# Introduction — 下書き（日本語）
+# Introduction — Japanese Draft
 
 > **方針メモ**
 > - 国際誌向け。流れ：バンドリング → 分散管理の障壁 → 広域連携・地域分割 → ギャップ → 貢献

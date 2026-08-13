@@ -1,4 +1,4 @@
-# Literature Review — 下書き（日本語）
+# Literature Review — Japanese Draft
 
 > **方針メモ（2026-07-12 更新）**
 > - サブセクション見出しは付けない。main.tex・s01と同じく見出しなしの連続する文章として書く（6章立てだった前バージョンから変更）。

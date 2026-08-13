@@ -45,6 +45,7 @@ figures/atlas/*.pdf
 # main.pdf is excluded too since it's regenerable from main.tex; `git add -f paper/latex/main.pdf`
 # if you'd rather keep a viewable copy on GitHub.
 paper/latex/*.aux
+paper/latex/*.dvi
 paper/latex/*.log
 paper/latex/*.out
 paper/latex/*.synctex.gz
