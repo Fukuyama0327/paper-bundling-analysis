@@ -5,16 +5,17 @@ each row's objective as the exact closed form ``sum f(N_m, L)`` instead of the
 PWL approximation used inside the solver.
 
 ``--input`` and ``--output`` are both required on purpose. Until 2026-08-13 they
-defaulted to ``optimization_results_closed_form_20251207_200558.csv`` and
+defaulted to a superseded result series and to
 ``optimization_results_exact_objective.csv`` respectively, so running the script
-with no arguments silently rewrote the canonical result file from a superseded
-solver run. That combination is wrong twice over:
+with no arguments silently rewrote the canonical result file from an older solver
+run. That combination was wrong twice over:
 
 * The canonical file is **not** produced by this script. It is the direct output
   of the all-integer-PWL full-grid run of ``run_gurobi_districting.py``
   (commit a3a2f61), whose assignments live in
-  ``data/processed/districting_solutions_all36.pkl``. The 20251207_200558 series
-  is an earlier run that reaches a worse objective in 11 of the 36 cases.
+  ``data/processed/districting_solutions_all36.pkl``. The earlier 20251207_200558
+  series reached a worse objective in 11 of the 36 cases and has since been
+  removed from the working tree (it remains in git history).
 * This script writes fewer columns than the solver does. ``Status``,
   ``ElapsedSeconds`` and ``PWLNodes`` would be dropped, breaking
   ``plot_dm_sensitivity.py`` (filters on ``Status``) and

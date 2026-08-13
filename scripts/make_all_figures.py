@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-"""論文図表の一括生成（実行ごとのアーカイブ付き）。
+"""論文図表の一括生成（非推奨・実行ごとのアーカイブ付き）。
+
+非推奨（2026-08-13）: 本スクリプトが実行するのは図表スクリプトのうち一部だけで、
+論文が使う図6点のうち3点（対象地域図・D-M感度図・地域内訳図・地域分割図）は作られない。
+既定では `figures/`・`outputs/` の正本を更新するため、一部だけ新しく残りは古い、
+という状態を作れてしまう。論文の図表を漏れなく作るには
+`notebooks/pipeline_walkthrough.ipynb` の第6章を通して実行すること
+（`docs/legacy_and_unused.md`）。
 
 全図表生成スクリプトを一括実行し、成果物を2箇所に書き出す。
 
@@ -78,6 +85,10 @@ def main() -> None:
                         help="figures/・outputs/ の正本を更新せず、実行フォルダのみに出力する")
     parser.add_argument("--runs-root", type=Path, default=Path("outputs/runs"))
     args = parser.parse_args()
+
+    print("警告: このスクリプトは図表スクリプトの一部しか実行しない（非推奨）。")
+    print("      論文の図を漏れなく作るには notebooks/pipeline_walkthrough.ipynb 第6章を使う。")
+    print("      作られない図: study_area / dm_sensitivity / region_breakdown / districting_map*\n")
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = REPO_ROOT / args.runs_root / timestamp

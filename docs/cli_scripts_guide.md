@@ -152,10 +152,10 @@ python scripts\run_gurobi_districting.py --pwl all --cases 25:3 35:3 40:1 --thre
 | `--bundle-limit` | 契約バンドリング上限L（デフォルト5） |
 | `--force` | 出力先が本スクリプトの書かない列を持っていても上書きする |
 
-**`--input`・`--output`に既定値は無い（2026-08-13に廃止）。** 以前は`--input`が旧系列
-`optimization_results_closed_form_20251207_200558.csv`、`--output`が正本
-`optimization_results_exact_objective.csv`を指していたため、引数なしで実行すると
-正本が旧系列の値で上書きされる状態だった。
+**`--input`・`--output`に既定値は無い（2026-08-13に廃止）。** 以前は`--input`が旧系列、
+`--output`が正本`optimization_results_exact_objective.csv`を指していたため、
+引数なしで実行すると正本が旧系列の値で上書きされる状態だった。
+その旧系列CSV自体もリポジトリから外した（git履歴には残る）。
 
 正本は本スクリプトの出力ではなく、全整数PWLフルグリッド実行（commit a3a2f61）による
 `run_gurobi_districting.py`の直接出力である。列数も異なり（正本10列 / 本スクリプト7列）、

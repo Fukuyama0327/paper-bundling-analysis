@@ -13,7 +13,6 @@
 現時点の管理対象:
 - `expected_contracts_comparison_l5.csv`: \(L=5\) のシミュレーション値と閉形式解析解の比較。
 - `expected_contracts_comparison_summary.csv`: \(L=1,3,5,7,10\) の比較誤差サマリー。
-- `optimization_results_closed_form_20251207_200558.csv`: 閉形式目的関数による地域分割最適化結果。
 - `optimization_results_supply_series_20251207_163046.csv`: 供給制約等を含む可能性がある差分調査用の最適化結果。
 - `distance_matrix_322_20251208.pkl`: 別PCでGurobi再実行を行うための対象322橋梁の距離行列。
 - `gurobi_validation_all_integer.csv`: 代表ケースを全整数PWLで再実行した検証結果。
@@ -24,7 +23,8 @@
   - 注意（2026-08-13訂正）: 以前この行には「20251207_200558系列を`reevaluate_optimization_objectives.py`で再評価したもの」と記載していたが誤り。列構成（`Status`・`ElapsedSeconds`・`PWLNodes`を含む10列）が示すとおりソルバの直接出力であり、旧系列を再評価しても36ケース中11ケースで値が一致しない（旧系列の方が悪い解）。
 - `target_rc_bridges_322.csv`: 対象6市町村のRC橋322件（`step3_extract_rc_bridges.py`→行政界チェック→`step3_filter_target_municipalities.py` の出力）。管理者別橋梁数（大河原町103・白石市98・蔵王町64・村田町33・川崎町14・七ヶ宿町10）から `tab:optimization_results` の管理者ベース基準値を計算する（`scripts/plot_optimization_results.py`）。注: 座標が福島県側にある「無名橋2号」（白石市管理）1件を行政界チェックで除外済み（これが歴史的なN=322 vs 323の差の正体）。
 
-`optimization_results_closed_form_20251207_200558.csv` はGurobi最適化時のPWL近似値を含む**旧系列**（経緯を残すための資料であって、正本の再生成元ではない）。得られた地域分割を厳密な閉形式値で再評価する場合は `scripts/reevaluate_optimization_objectives.py` を使う。同スクリプトは `--input`・`--output` が必須で、正本を上書きしようとすると列が失われるため止まる（`docs/cli_scripts_guide.md`）。
+地域分割最適化の結果を厳密な閉形式値で再評価するには `scripts/reevaluate_optimization_objectives.py` を使う。`--input`・`--output` はいずれも必須で、正本を上書きしようとすると列が失われるため止まる（`docs/cli_scripts_guide.md`）。
+なお旧系列 `optimization_results_closed_form_20251207_200558.csv`（20251207_200558実行、PWL近似値を含む）は正本の再生成元ではなく参照もされていないため、2026-08-13に管理対象から外した（git履歴から復元可能）。
 
 `distance_matrix_322_20251208.pkl` は `scripts/run_gurobi_districting.py` の入力である。元の巨大データやNotebookを別PCへ持ち込まず、代表ケースのPWL検証を再実行するために管理する。
 

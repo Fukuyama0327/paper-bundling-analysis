@@ -6,10 +6,10 @@ markov_input TSVから遷移前×遷移後のクロス集計表を作り、CSV�
 正本入力: `data/processed/markov_input_20251207_200558/markov_input_with_supply.txt`
 （採用推移行列と同一実行のデータ。n=7,628）
 
-注意（2026-07-06確認）: 現行docx/main.texの表（II→II=4703、計7,638件）は
-1つ前のデータ状態（20251207_120512以前）由来で、その後の重複履歴除去で
-II→IIが10件減っている。採用行列（20251207_200558）と整合させるなら
-本スクリプトの出力（II→II=4693、計7,628件）に本文を更新する必要がある。
+経緯: 旧docx/pptxの表（II→II=4,703、計7,638件）は1つ前のデータ状態
+（20251207_120512以前）由来で、その後の重複履歴除去でII→IIが10件減った。
+main.tex は2026-08-13時点で本スクリプトの出力（II→II=4,693、計7,628件）に
+更新済みのため、旧値との差分表示は廃止した。
 
 使用例:
     python scripts/make_transition_counts.py \
@@ -30,9 +30,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from bundling_analysis.preprocessing import hantei_to_int
 
 ROMAN = {1: "I", 2: "II", 3: "III", 4: "IV"}
-
-#: 現行docx/pptx記載の集計値（旧データ状態、参考照合用）
-DOCX_REFERENCE = [[949, 1323, 82, 0], [0, 4703, 372, 2], [0, 0, 203, 2], [0, 0, 0, 2]]
 
 
 def transition_crosstab(markov_input: pd.DataFrame) -> pd.DataFrame:
@@ -74,13 +71,6 @@ def main() -> None:
     total = int(counts.values.sum())
     print(f"入力: {args.input}（遷移データ {total:,} 件）")
     print(counts.to_string())
-
-    if counts.values.tolist() == DOCX_REFERENCE:
-        print("→ 現行docx/main.tex記載値と一致")
-    else:
-        diff = pd.DataFrame(DOCX_REFERENCE, index=counts.index, columns=counts.columns)
-        print("→ 注意: 現行docx/main.tex記載値と不一致（本文更新が必要）。差分（本出力 - docx）:")
-        print((counts - diff).to_string())
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     counts.to_csv(args.output)
