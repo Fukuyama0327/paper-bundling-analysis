@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-08-13T16:51:19",
+  "args": {
+    "input_dir": "data/processed/markov_input_20251207_200558",
+    "scenarios": "['with_supply_collapse']",
+    "output_dir": "data/processed/emarkov_20251207_200558",
+    "max_iter": "100",
+    "tol": "1e-06",
+    "verbose": "False"
+  },
+  "results": [
+    {
+      "scenario": "with_supply_collapse",
+      "input": "data/processed/markov_input_20251207_200558/markov_input_with_supply_collapse.txt",
+      "n_transitions": 7628,
+      "matrix_size": [
+        3,
+        3
+      ],
+      "log_likelihood": -3640.4413084334547,
+      "aic": 7284.882616866909,
+      "iterations": 5,
+      "q_stage3": 0.012329787974114258
+    }
+  ]
+}

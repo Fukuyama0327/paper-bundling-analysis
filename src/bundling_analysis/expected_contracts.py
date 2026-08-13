@@ -3,11 +3,39 @@
 This module implements the closed-form expected contract count used in the
 paper draft. It intentionally depends only on the Python standard library so
 the formula can be checked without rebuilding the full analysis environment.
+
+``DEFAULT_TRANSITION_MATRIX`` — the matrix every downstream script derives ``q``
+from — is **read from the eMarkov output committed in this repository**, not
+from a literal typed into this file. The chain is:
+
+    data/processed/markov_input_20251207_200558/markov_input_with_supply_collapse.txt
+        |  scripts/step3_run_emarkov.py  (deterministic: no RNG, no seed)
+        v
+    data/processed/emarkov_20251207_200558/with_supply_collapse/
+        with_supply_collapse_transition_matrix_stage3.csv   <-- read at import
+        v
+    DEFAULT_TRANSITION_MATRIX -> q = 0.012329787974114258
+
+Loading rather than hard-coding means that re-running the estimation on new
+inspection data actually reaches the figures and tables. To keep that from
+happening *silently*, the value the paper was written against is still pinned
+here as ``OPTIMIZATION_TRANSITION_MATRIX``: if the file on disk stops matching
+the pin, importing this module warns. A deliberate update therefore means
+re-running the estimation **and** updating the pin, at which point the warning
+goes away and ``tests/test_transition_matrix_provenance.py`` passes again.
+
+Importing stays cheap and dependency-free: the estimator is not run here, only
+its committed output is read (stdlib ``csv``). If the file is missing, the
+pinned value is used and a warning is issued, so the module never fails to
+import.
 """
 
 from __future__ import annotations
 
+import csv
+import warnings
 from math import ceil, comb
+from pathlib import Path
 from typing import Sequence
 
 
@@ -105,14 +133,79 @@ COMPARISON_TRANSITION_MATRIX = (
     (0.0, 0.0, 1.0),
 )
 
-# Full-precision values from
-# 20251208_定期打ち合わせ/results/main/20251207_200558/emarkov_results/
-#   with_supply_collapse/with_supply_collapse_transition_matrix.csv
-# (with_supply series; matches the midterm-review pptx chart4 q within ~5.4e-6).
+#: eMarkov output this repository treats as canonical. Regenerate in place with
+#: ``python scripts/step3_run_emarkov.py
+#:     --input-dir data/processed/markov_input_20251207_200558
+#:     --scenarios with_supply_collapse
+#:     --output-dir data/processed/emarkov_20251207_200558``
+CANONICAL_TRANSITION_MATRIX_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "data"
+    / "processed"
+    / "emarkov_20251207_200558"
+    / "with_supply_collapse"
+    / "with_supply_collapse_transition_matrix_stage3.csv"
+)
+
+#: The value the paper was written against. Kept as a pin so that a change in
+#: the file above cannot pass unnoticed; update it together with the file.
+#: (with_supply series; matches the midterm-review pptx chart4 q within ~5.4e-6.)
 OPTIMIZATION_TRANSITION_MATRIX = (
     (9.132011474084255065e-01, 8.616882547596728392e-02, 6.300271156072234646e-04),
     (0.0, 9.857330912701161019e-01, 1.426690872988389813e-02),
     (0.0, 0.0, 1.0),
 )
 
-DEFAULT_TRANSITION_MATRIX = OPTIMIZATION_TRANSITION_MATRIX
+
+def load_transition_matrix(path) -> tuple[tuple[float, ...], ...]:
+    """Read a transition matrix written by ``scripts/step3_run_emarkov.py``.
+
+    The file is a headerless CSV of the m x m matrix (``numpy.savetxt``
+    default format), so the values round-trip exactly through ``float``.
+    """
+
+    with Path(path).open(encoding="utf-8-sig", newline="") as handle:
+        rows = [[float(value) for value in row] for row in csv.reader(handle) if row]
+    if not rows or any(len(row) != len(rows) for row in rows):
+        raise ValueError(f"{path} is not a square transition matrix")
+    for index, row in enumerate(rows):
+        if abs(sum(row) - 1.0) > 1e-9:
+            raise ValueError(f"{path} row {index} sums to {sum(row)!r}, not 1")
+    return tuple(tuple(row) for row in rows)
+
+
+def _canonical_transition_matrix() -> tuple[tuple[float, ...], ...]:
+    """Load the committed eMarkov output, warning if it drifts from the pin."""
+
+    if not CANONICAL_TRANSITION_MATRIX_PATH.exists():
+        warnings.warn(
+            f"canonical transition matrix not found at "
+            f"{CANONICAL_TRANSITION_MATRIX_PATH}; falling back to the pinned "
+            f"OPTIMIZATION_TRANSITION_MATRIX. Regenerate it with "
+            f"scripts/step3_run_emarkov.py.",
+            stacklevel=2,
+        )
+        return OPTIMIZATION_TRANSITION_MATRIX
+
+    loaded = load_transition_matrix(CANONICAL_TRANSITION_MATRIX_PATH)
+    if loaded != OPTIMIZATION_TRANSITION_MATRIX:
+        _, loaded_q = repair_probability_from_transition_matrix(loaded)
+        _, pinned_q = repair_probability_from_transition_matrix(
+            OPTIMIZATION_TRANSITION_MATRIX
+        )
+        warnings.warn(
+            "the committed eMarkov output no longer matches the pinned matrix "
+            "the paper was written against: "
+            f"q = {loaded_q!r} (file) vs {pinned_q!r} (pin). "
+            "Every figure and table will now use the file. If that is intended, "
+            "update OPTIMIZATION_TRANSITION_MATRIX in "
+            f"{Path(__file__).name} to match; if not, restore "
+            f"{CANONICAL_TRANSITION_MATRIX_PATH.name}.",
+            stacklevel=2,
+        )
+    return loaded
+
+
+#: Matrix used by every downstream script. Read from the committed eMarkov
+#: output above, so re-running the estimation propagates to the results.
+DEFAULT_TRANSITION_MATRIX = _canonical_transition_matrix()
