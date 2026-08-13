@@ -147,9 +147,21 @@ python scripts\run_gurobi_districting.py --pwl all --cases 25:3 35:3 40:1 --thre
 
 | オプション | 意味 |
 |---|---|
-| `--input` | Gurobi結果CSV（デフォルト`data/processed/optimization_results_closed_form_20251207_200558.csv`） |
-| `--output` | 再評価後CSVの出力先（デフォルト`data/processed/optimization_results_exact_objective.csv`。`plot_optimization_results.py`のデフォルト入力と同一パス） |
+| `--input` | Gurobi結果CSV（**必須**。`Region_*_Count`列が必要） |
+| `--output` | 再評価後CSVの出力先（**必須**） |
 | `--bundle-limit` | 契約バンドリング上限L（デフォルト5） |
+| `--force` | 出力先が本スクリプトの書かない列を持っていても上書きする |
+
+**`--input`・`--output`に既定値は無い（2026-08-13に廃止）。** 以前は`--input`が旧系列
+`optimization_results_closed_form_20251207_200558.csv`、`--output`が正本
+`optimization_results_exact_objective.csv`を指していたため、引数なしで実行すると
+正本が旧系列の値で上書きされる状態だった。
+
+正本は本スクリプトの出力ではなく、全整数PWLフルグリッド実行（commit a3a2f61）による
+`run_gurobi_districting.py`の直接出力である。列数も異なり（正本10列 / 本スクリプト7列）、
+上書きすると`Status`・`ElapsedSeconds`・`PWLNodes`が失われて
+`plot_dm_sensitivity.py`と`plot_expected_contracts_scaling_analysis.py`が壊れる。
+そのため、出力先が本スクリプトの書かない列を持つ場合は`--force`なしでは上書きしない。
 
 ### `scripts/generate_expected_contracts.py`（期待契約件数の系列生成）
 

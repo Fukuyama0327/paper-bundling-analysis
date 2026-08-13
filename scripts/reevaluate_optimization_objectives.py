@@ -1,4 +1,33 @@
-"""Re-evaluate optimization result rows with the exact closed-form objective."""
+"""Re-evaluate optimization result rows with the exact closed-form objective.
+
+Reads a Gurobi result CSV that carries ``Region_*_Count`` columns and rewrites
+each row's objective as the exact closed form ``sum f(N_m, L)`` instead of the
+PWL approximation used inside the solver.
+
+``--input`` and ``--output`` are both required on purpose. Until 2026-08-13 they
+defaulted to ``optimization_results_closed_form_20251207_200558.csv`` and
+``optimization_results_exact_objective.csv`` respectively, so running the script
+with no arguments silently rewrote the canonical result file from a superseded
+solver run. That combination is wrong twice over:
+
+* The canonical file is **not** produced by this script. It is the direct output
+  of the all-integer-PWL full-grid run of ``run_gurobi_districting.py``
+  (commit a3a2f61), whose assignments live in
+  ``data/processed/districting_solutions_all36.pkl``. The 20251207_200558 series
+  is an earlier run that reaches a worse objective in 11 of the 36 cases.
+* This script writes fewer columns than the solver does. ``Status``,
+  ``ElapsedSeconds`` and ``PWLNodes`` would be dropped, breaking
+  ``plot_dm_sensitivity.py`` (filters on ``Status``) and
+  ``plot_expected_contracts_scaling_analysis.py`` (reads ``BundleLimit``).
+
+Overwriting a file that has columns this script does not write now requires
+``--force``.
+
+Usage:
+    python scripts/reevaluate_optimization_objectives.py \
+        --input outputs/new_gurobi_results.csv \
+        --output outputs/new_gurobi_results_exact.csv
+"""
 
 from __future__ import annotations
 
@@ -23,19 +52,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path("data/processed/optimization_results_closed_form_20251207_200558.csv"),
+        required=True,
         help="Optimization result CSV with Region_*_Count columns.",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/processed/optimization_results_exact_objective.csv"),
+        required=True,
         help=(
-            "Output CSV path. The default matches the canonical input of "
-            "plot_optimization_results.py so figures pick up re-evaluated values."
+            "Output CSV path. Required: there is deliberately no default, because "
+            "the previous default pointed at the canonical result file."
         ),
     )
     parser.add_argument("--bundle-limit", type=int, default=5, help="Bundle limit L.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite --output even if it carries columns this script does not write.",
+    )
     return parser.parse_args()
 
 
@@ -49,24 +83,46 @@ def parse_region_counts(row: dict[str, str]) -> list[int]:
     return counts
 
 
+FIELDNAMES = [
+    "MaxDistance",
+    "M",
+    "ObjectiveValue_PWL",
+    "ObjectiveValue_Exact",
+    "Difference_PWL_minus_Exact",
+    "RegionCounts",
+    "BundleLimit",
+]
+
+
+def check_output_target(output: Path, force: bool) -> None:
+    """Refuse to silently drop columns the target file already carries."""
+    if force or not output.exists():
+        return
+    with output.open(encoding="utf-8-sig", newline="") as f:
+        existing = next(csv.reader(f), [])
+    dropped = [name for name in existing if name not in FIELDNAMES]
+    if dropped:
+        raise SystemExit(
+            f"{output} already has columns this script does not write: {dropped}.\n"
+            "It looks like a run_gurobi_districting.py output (the canonical result "
+            "file is one). Overwriting it would drop those columns and break "
+            "plot_dm_sensitivity.py / plot_expected_contracts_scaling_analysis.py.\n"
+            "Write somewhere else, or pass --force if you really mean it."
+        )
+
+
 def main() -> None:
     args = parse_args()
     _, repair_probability = repair_probability_from_transition_matrix(
         DEFAULT_TRANSITION_MATRIX
     )
+    check_output_target(args.output, args.force)
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
     with args.input.open(encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
 
-    fieldnames = [
-        "MaxDistance",
-        "M",
-        "ObjectiveValue_PWL",
-        "ObjectiveValue_Exact",
-        "Difference_PWL_minus_Exact",
-        "RegionCounts",
-    ]
+    fieldnames = FIELDNAMES
     with args.output.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -85,6 +141,7 @@ def main() -> None:
                     "ObjectiveValue_Exact": f"{exact:.12f}",
                     "Difference_PWL_minus_Exact": f"{pwl - exact:.12f}",
                     "RegionCounts": ";".join(str(count) for count in counts),
+                    "BundleLimit": args.bundle_limit,
                 }
             )
 

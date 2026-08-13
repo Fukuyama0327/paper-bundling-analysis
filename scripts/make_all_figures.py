@@ -13,7 +13,8 @@
   - tab:transition_counts   (make_transition_counts.py)
   - fig:inspection_interval (plot_inspection_interval.py)
   - fig:optimization_results / tab:optimization_results (plot_optimization_results.py)
-  - fig:expected_contracts  (plot_expected_contracts_svg.py)
+  - fig:expected_contracts_by_bundle_limit (plot_expected_contracts_by_limit.py)
+  - fig:expected_contracts_scaling_analysis (plot_expected_contracts_scaling_analysis.py)
 
 使用例:
     python scripts/make_all_figures.py                # アーカイブ＋正本更新
@@ -94,8 +95,12 @@ def main() -> None:
         ("plot_optimization_results.py",
          ["--output-stem", str(fig_dir / "optimization_results"),
           "--table-output", str(tab_dir / "optimization_results_table.csv")]),
-        ("plot_expected_contracts_svg.py",
-         ["--output", str(fig_dir / "expected_contracts_comparison_l5.svg")]),
+        ("plot_expected_contracts_by_limit.py",
+         ["--output-stem", str(fig_dir / "expected_contracts_by_bundle_limit")]),
+        # N=1000まで f(N,L) を全点評価するため1分弱かかる（他ステップより遅い）。
+        ("plot_expected_contracts_scaling_analysis.py",
+         ["--output-stem", str(fig_dir / "expected_contracts_scaling_analysis"),
+          "--csv-output", str(tab_dir / "expected_contracts_scaling_analysis.csv")]),
     ]
     results = [run_step(script, step_args, run_dir) for script, step_args in steps]
 
@@ -107,7 +112,8 @@ def main() -> None:
             dst = REPO_ROOT / "figures" / src.name
             shutil.copy2(src, dst)
             canonical_updated.append(str(dst.relative_to(REPO_ROOT)))
-        for name in ["transition_counts.csv", "optimization_results_table.csv"]:
+        for name in ["transition_counts.csv", "optimization_results_table.csv",
+                     "expected_contracts_scaling_analysis.csv"]:
             src = tab_dir / name
             if src.exists():
                 dst = REPO_ROOT / "outputs" / name
