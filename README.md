@@ -29,8 +29,23 @@ notes/                  # 作業メモ・検討記録（pre_git_migration_invent
 data/                   # 派生データ（data/README.md 参照。生データは data/raw/ か data/external/ に置きGit管理外）
 src/bundling_analysis/  # 再利用可能なコアロジック（下記「数値計算パイプライン」参照）
 scripts/                # CLIとして実行するステップ別スクリプト
-docs/                   # Gurobi実行環境（別PC）のセットアップ記録
+notebooks/              # パイプラインを上から実行して確認するノートブック（下記「プログラムを触るときの起点」）
+docs/                   # 環境構築・運用ガイド、非接続コードの一覧
+tests/                  # pytest（合成データによる通しテスト、q の出所の検証）
 ```
+
+## プログラムを触るときの起点
+
+**`notebooks/pipeline_walkthrough.ipynb` を上から実行する。** 計算そのものは `scripts/` 配下の
+プログラムが行い、ノートブックはそれらを順に呼び出して、入力・出力・途中の値が繋がっているかを
+確認する。どのプログラムが何を受け取り何を出すかは、ここを読むのが最も早い。
+
+- 既定では論文が参照するファイルに触れず、`outputs/walkthrough/<実行時刻>/` に出力して突合する。
+- 論文の図表を作り直すときも、このノートブックの第6章を通して実行する（図の生成経路はここに一本化した）。
+- 動作はスイッチで切り替える。`RUN_FROM_RAW`（点検データから回すか）、`RUN_GUROBI`（最適化を解き直すか）、
+  `RUN_MAPS`（地図を描くか）、`UPDATE_CANONICAL`（`figures/`・`outputs/` を更新するか）、
+  `SYNC_TEX_FIGURES`（`main.tex` が読む場所へ図を配るか）。
+- 各段階の確認結果は ✅ / ❌ で表示され、最後に一覧表と `run.meta.json`（git HEAD・スイッチ・生成物）が残る。
 
 ## ドキュメント案内（mdファイルが多くて迷ったらここを見る）
 
@@ -39,7 +54,10 @@ docs/                   # Gurobi実行環境（別PC）のセットアップ記�
 ### ★ 現状を知りたければまずこの2つ
 
 - **`notes/pre_git_migration_inventory.md`** — リポジトリ全体のマスター台帳。どのプログラム・データがどこにあり、何を計算し、複数バージョンのうちどれを採用するかの決定が全部書いてある。**迷ったらまずここ。**
-- **`notes/step3_refactoring.md`** — STEP3（メイン解析）をノートブックからスクリプト群へ切り出した記録。各スクリプトが元のどのセルに対応するか、実データでの検証結果、本文との不整合の発見（`tab:transition_counts`のII→II、`tab:optimization_results`の基準値、詳細は3c章）が書いてある。
+- **`notes/step3_refactoring.md`** — STEP3（メイン解析）をノートブックからスクリプト群へ切り出した記録。各スクリプトが元のどのセルに対応するか、実データでの検証結果が書いてある。同章が指摘していた本文との不整合（`tab:transition_counts`のII→II、`tab:optimization_results`の基準値）は、2026-08-13時点でいずれも `main.tex` 側が更新され解消済み。
+
+パイプラインの現在の姿（何がどこから来て、どこへ繋がっているか）は、上記2つよりも
+`notebooks/pipeline_walkthrough.ipynb` を実行するのが早い。上の2つは経緯と決定の記録として参照する。
 
 この2つ以外の`notes/`配下は、**そこに至るまでの検討過程・経緯の記録**であり、内容が古くなっている場合がある（矛盾があれば上記2つを正とする）。
 
@@ -69,13 +87,16 @@ docs/                   # Gurobi実行環境（別PC）のセットアップ記�
 | `gurobi_setup_log.md` | Windows PCでのGurobi環境構築・ライセンストラブル対応ログ |
 | `remote_gurobi_setup.md` | 別PCでの地域分割最適化の再実行手順 |
 | `multi_pc_git_python_notes.md` | Mac/Windows間のgit・Python環境の詰まりどころ集（認証・pushエラー・VS Code Remote切断対策等） |
-| `cli_scripts_guide.md` | Jupyter Notebookから来た人向け、CLIスクリプト（`--cases`等）の使い方ガイド |
+| `cli_scripts_guide.md` | CLIスクリプトの引数の渡し方と、各スクリプトのオプション一覧 |
+| `legacy_and_unused.md` | 現行パイプラインから外れているコード・データの一覧（触らなくてよいものの明示） |
 
 ### その他
 
 - `data/README.md`, `outputs/README.md` — 各ディレクトリの中身の説明
 - `references/README.md` — 参考文献の置き場の説明（`references/pdf/`配下の個別レビューメモは文献調査の内容そのもの）
 - `tests/test_step3_pipeline.py` — STEP3の合成データによる通しテスト（コードのdocstring参照）
+- `tests/test_transition_matrix_provenance.py` — q の出所の検証（推定用データ→推定→保存ファイル→定数の一致）
+- `notebooks/pipeline_walkthrough.ipynb` — パイプライン全体を実行して確認するノートブック（上記「プログラムを触るときの起点」）
 
 ## 数値計算パイプライン
 
@@ -85,27 +106,57 @@ docs/                   # Gurobi実行環境（別PC）のセットアップ記�
 2. **道路メンテナンス年報との施設番号突合（マッチング）** — 同じく別プロジェクトの成果物を所与とする。
 3. **メイン解析（本リポジトリの中心）** — RC橋抽出 → 6市町村フィルタ（N=322） → eMarkov推定 → 期待契約件数 → 地域分割最適化。
 
-### ステップ3を構成するスクリプト・モジュール
+### ステップ3を構成するスクリプト
+
+上流（点検データ→対象橋梁→推定用データ→距離行列）:
 
 | ファイル | 役割 |
 |---|---|
 | `scripts/step3_extract_rc_bridges.py` | x-Road原データ→宮城県抽出→RC橋抽出→行政界チェック（期待値5,525件） |
 | `scripts/step3_filter_target_municipalities.py` | 対象6市町村（七ヶ宿町・白石市・蔵王町・川崎町・村田町・大河原町）フィルタ。N=322の決定ロジック |
-| `scripts/step3_prepare_markov_input.py` | 年報突合データ→供用開始時点付加→eMarkov入力整形 |
-| `scripts/step3_build_distance_matrix.py` | 橋梁間距離行列の構築（`distance_cache.py`のSQLiteキャッシュに統一） |
+| `scripts/step3_prepare_markov_input.py` | 年報突合データ→供用開始時点付加→eMarkov入力整形（4シナリオ） |
+| `scripts/step3_run_emarkov.py` | eMarkov推定の実行。推移確率行列と q を出力する（**q の出所**） |
+| `scripts/step3_build_distance_matrix.py` | 橋梁間距離行列の構築（大円距離、`distance_cache.py`のSQLiteキャッシュ経由） |
+
+最適化:
+
+| ファイル | 役割 |
+|---|---|
 | `scripts/run_gurobi_districting.py` | 地域分割最適化本体（距離制約D×地域数Mの感度分析、Gurobi必須） |
-| `scripts/step3_compare_and_report.py` | 現行管理者ベースとの比較・レポート生成 |
-| `scripts/reevaluate_optimization_objectives.py` | GurobiのPWL近似結果を厳密な閉形式で再評価 |
-| `scripts/generate_expected_contracts.py` / `plot_expected_contracts_svg.py` | 期待契約件数の系列生成・比較図 |
-| `src/bundling_analysis/emarkov_estimator.py` | 劣化推移確率（マルコフ行列）の推定（MATLAB版`eMarkov.m`の移植） |
-| `src/bundling_analysis/expected_contracts.py` | 補修確率q算出・閉形式期待契約件数関数。`DEFAULT_TRANSITION_MATRIX`はwith_supply系フル精度値 |
+| `scripts/reevaluate_optimization_objectives.py` | GurobiのPWL近似結果を厳密な閉形式で再評価（`--input`・`--output` 必須） |
+| `scripts/step3_compare_and_report.py` | 現行管理者ベースとの比較レポート（任意。本文の基準値は作図側で計算する） |
+
+図表:
+
+| ファイル | 出力（本文での位置） |
+|---|---|
+| `scripts/plot_study_area_map.py` | 対象6市町と322橋の分布（Figure 1） |
+| `scripts/plot_inspection_interval.py` | 点検間隔の分布（Figure 2） |
+| `scripts/plot_expected_contracts_by_limit.py` | \(f(N,L)\) の形状（Figure 3） |
+| `scripts/plot_dm_sensitivity.py` | 距離上限と地域数に対する期待契約件数（Figure 4） |
+| `scripts/plot_region_breakdown.py` | 代表解の地域別内訳（Figure 5） |
+| `scripts/make_districting_maps.py` / `plot_districting_map.py` | 代表3ケースの地域分割図（Figure 6）とatlas |
+| `scripts/make_transition_counts.py` | 健全度遷移の集計表（Table 1） |
+| `scripts/plot_optimization_results.py` | 現行管理との比較表（Table 2）のLaTeX行。図自体は本文未使用 |
+| `scripts/plot_expected_contracts_scaling_analysis.py` | 第4.3節向けの感度分析図（本文へは未挿入） |
+
+非接続・非推奨のもの（`scripts/make_all_figures.py`, `generate_expected_contracts.py`,
+`parallel_contracts.py`, `extract_pdf_text.py`）は `docs/legacy_and_unused.md` を参照。
+
+### コアモジュール
+
+| ファイル | 役割 |
+|---|---|
+| `src/bundling_analysis/emarkov_estimator.py` | 劣化推移確率（マルコフ行列）の推定（MATLAB版`eMarkov.m`の移植、乱数なし＝決定的） |
+| `src/bundling_analysis/expected_contracts.py` | 閉形式の期待契約件数関数と q の算出。`DEFAULT_TRANSITION_MATRIX` は `data/processed/emarkov_20251207_200558/` に保存した推定結果を読み込む（論文が依拠した値をピン留めしてあり、ずれれば警告） |
 | `src/bundling_analysis/distance_cache.py` | 橋梁間距離（haversine）のSQLiteキャッシュ |
-| `src/bundling_analysis/admin_boundary.py` | 行政界データ読込の統一ローダ |
+| `src/bundling_analysis/districting_map.py` | 割当pklの読み込みと地域分割図の描画 |
+| `src/bundling_analysis/admin_boundary.py` | 行政界データ読込の統一ローダ（geopandas/pyogrio の版差を吸収） |
 | `src/bundling_analysis/preprocessing.py` | 和暦変換・緯度経度パース等の純粋関数 |
 | `src/bundling_analysis/plotting_utils.py` | 日本語フォント設定など可視化の共通ユーティリティ |
-| `src/bundling_analysis/config.py` | プロジェクト設定（`SHAPEFILE_PATH`, `I`(=L), `M_RANGE`等） |
+| `src/bundling_analysis/config.py` | 旧設定クラス。現在使われているのは `SHAPEFILE_PATH` のみ（`I`(=L)等は未使用。`docs/legacy_and_unused.md`） |
 
-Gurobiは別PC（ライセンス保有機）での実行を前提とする（`docs/gurobi_setup_log.md`, `docs/remote_gurobi_setup.md`）。実データでの通し実行・論文図表の再現は完了済み（`notes/step3_refactoring.md` 3c章）。地域分割最適化のフルグリッド（36ケース）再構築は進行中（同4章「残タスク」参照）。
+Gurobiは別PC（ライセンス保有機）での実行を前提とする（`docs/gurobi_setup_log.md`, `docs/remote_gurobi_setup.md`）。地域分割最適化のフルグリッド（36ケース）は全整数PWLで実行済みで、結果は `data/processed/optimization_results_exact_objective.csv`、割当は `districting_solutions_all36.pkl` にある。
 
 ## 論文の構成（main.tex現状）
 
@@ -132,6 +183,20 @@ Gurobiは別PC（ライセンス保有機）での実行を前提とする（`do
 
 ## 直近の作業状況
 
+### 2026-08-13
+
+- `notebooks/pipeline_walkthrough.ipynb` を追加。点検データから図表までを上から実行して確認できる。
+  原データからの再現（`RUN_FROM_RAW`）、最適化の解き直し（`RUN_GUROBI`）、正本の更新
+  （`UPDATE_CANONICAL`）、`main.tex` への図の同期（`SYNC_TEX_FIGURES`）を切り替えられる。
+- q の出所をリポジトリ内に移した。従来は `expected_contracts.py` に数値を直接書き、根拠ファイルは
+  リポジトリ外にしかなかった。推定結果を `data/processed/emarkov_20251207_200558/` に保存し、
+  それを読み込む形に変更。ピン留め値とずれれば警告し、pytestでも検証する。
+- 第4.3節向けに `plot_expected_contracts_scaling_analysis.py` を追加（本文へは未挿入）。
+- `reevaluate_optimization_objectives.py` の既定値が正本を壊す問題を修正（引数を必須化）。
+- 旧系列 `optimization_results_closed_form_20251207_200558.csv` を管理対象から外した（git履歴には残る）。
+- 図表生成の経路をノートブック第6章に一本化し、`make_all_figures.py` を非推奨にした。
+- 行政界ファイルの読み込みが geopandas と fiona の版の組み合わせで落ちる問題を修正。
+
 ### 完了
 - `米国の管理階層と日本との比較.md` Section 3-6（国際比較 9ヶ国）: 完了
 - `米国の管理階層と日本との比較.md` Chapter 4（4-1〜4-6、4類型整理）: 完了
@@ -153,7 +218,7 @@ Gurobiは別PC（ライセンス保有機）での実行を前提とする（`do
 ## 主要パラメータ（数値計算）
 
 - 対象: 宮城県内6市町村（七ヶ宿町・白石市・蔵王町・川崎町・村田町・大河原町）のRC橋 **322橋**（推移確率推定自体は宮城県内RC橋5,525橋のデータを使用）
-- 補修確率: q ≈ 0.0123298（with_supply系、`src/bundling_analysis/expected_contracts.py`の`DEFAULT_TRANSITION_MATRIX`。中間審査pptxの数値と相対差5.4×10⁻⁶で一致確認済み）
+- 補修確率: q = 0.012329787974114258（`with_supply_collapse`系）。`data/processed/markov_input_20251207_200558/` の推定用データから `step3_run_emarkov.py` で再現でき、その出力を `data/processed/emarkov_20251207_200558/` に保存して `expected_contracts.py` が読み込む。整合は `tests/test_transition_matrix_provenance.py` が検証する
 - 同時発注上限: L = 5（基準値）、感度分析L = 1, 3, 7, 10
 - 距離制約 D・地域数 M を政策変数として感度分析（本文主結果は全整数PWL、`data/processed/gurobi_validation_all_integer.csv`）
 
