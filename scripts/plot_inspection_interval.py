@@ -13,6 +13,7 @@ markov_input TSVのinterval列から、平均・中央値の縦線付きヒス�
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -21,8 +22,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-matplotlib.rcParams["pdf.fonttype"] = 42
-matplotlib.rcParams["ps.fonttype"] = 42
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+
+# 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
+# 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
+setup_figure_defaults()
 
 
 def plot_interval_histogram(intervals: pd.Series, output_stem: Path, bins: int = 20) -> list[Path]:

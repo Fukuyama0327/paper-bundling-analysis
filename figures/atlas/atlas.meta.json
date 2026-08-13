@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-15T03:03:13",
-  "git_head": "f30e9f5",
+  "generated_at": "2026-08-14T00:29:15",
+  "git_head": "8ca46f5",
   "solutions": "data/processed/districting_solutions_all36.pkl",
   "bundle_limit": 5,
   "verifications": [

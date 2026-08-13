@@ -21,6 +21,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+
+# 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
+# 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
+setup_figure_defaults()
+
 from bundling_analysis.admin_boundary import load_admin_boundaries_gdf  # noqa: E402
 
 #: Target municipalities and their romanised names (kanji -> Latin) + fixed colour.

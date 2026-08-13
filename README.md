@@ -96,6 +96,7 @@ tests/                  # pytest（合成データによる通しテスト、q �
 - `references/README.md` — 参考文献の置き場の説明（`references/pdf/`配下の個別レビューメモは文献調査の内容そのもの）
 - `tests/test_step3_pipeline.py` — STEP3の合成データによる通しテスト（コードのdocstring参照）
 - `tests/test_transition_matrix_provenance.py` — q の出所の検証（推定用データ→推定→保存ファイル→定数の一致）
+- `tests/test_figure_fonts.py` — 本文が読む図がベクタ形式で、Type 3 フォントを含まないことの検査
 - `notebooks/pipeline_walkthrough.ipynb` — パイプライン全体を実行して確認するノートブック（上記「プログラムを触るときの起点」）
 
 ## 数値計算パイプライン
@@ -196,6 +197,10 @@ Gurobiは別PC（ライセンス保有機）での実行を前提とする（`do
 - 旧系列 `optimization_results_closed_form_20251207_200558.csv` を管理対象から外した（git履歴には残る）。
 - 図表生成の経路をノートブック第6章に一本化し、`make_all_figures.py` を非推奨にした。
 - 行政界ファイルの読み込みが geopandas と fiona の版の組み合わせで落ちる問題を修正。
+- 本文の図をラスタ（PNG）からベクタ（PDF）へ切り替えた。あわせて図中の文字の埋め込みを
+  Type 3 から TrueType に変更（`plotting_utils.setup_figure_defaults()`）。Type 3 は多くの
+  学術誌が受け付けないため、`tests/test_figure_fonts.py` で混入を検査する。
+  uplatex + dvipdfmx でのコンパイルを確認済み（21ページ、図9枚）。
 
 ### 完了
 - `米国の管理階層と日本との比較.md` Section 3-6（国際比較 9ヶ国）: 完了
