@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -54,14 +55,20 @@ def parse_args() -> argparse.Namespace:
         help="Pickle containing {'order': ..., 'd_core': distance_matrix}.",
     )
     parser.add_argument(
+        "--bridges",
+        type=Path,
+        default=Path("data/processed/target_rc_bridges_322.csv"),
+        help=(
+            "Target bridge CSV, used only to recompute the current-administrative "
+            "baseline for the Reduction(%%) column. The baseline depends on L, so it "
+            "cannot be hard-coded once a bundle limit other than 5 is analysed."
+        ),
+    )
+    parser.add_argument(
         "--baseline-objective",
         type=float,
-        default=2.588321070916122,
-        help=(
-            "Expected contracts under the current administrative districting, used "
-            "for the Reduction(%%) column. Default matches the first row of "
-            "outputs/optimization_results_table.csv."
-        ),
+        default=None,
+        help="Override the baseline instead of recomputing it from --bridges.",
     )
     parser.add_argument("--bundle-limit", type=int, default=5, help="Bundle limit L.")
     parser.add_argument(
@@ -76,6 +83,15 @@ def parse_args() -> argparse.Namespace:
         help="Skip the cross-check of recomputed counts/objective against each stored row.",
     )
     return parser.parse_args()
+
+
+def current_management_baseline(bridges_csv: Path, bundle_limit: int, q: float) -> float:
+    """Recompute the current-management objective from per-municipality counts.
+
+    Same computation as ``plot_dm_sensitivity.current_management_baseline``.
+    """
+    counts = pd.read_csv(bridges_csv)["管理者"].value_counts()
+    return sum(expected_contracts(int(count), bundle_limit, q) for count in counts)
 
 
 def load_distance_matrix(path: Path) -> tuple[dict[str, int], np.ndarray]:
@@ -124,6 +140,12 @@ def main() -> None:
     _, repair_probability = repair_probability_from_transition_matrix(
         DEFAULT_TRANSITION_MATRIX
     )
+    baseline = args.baseline_objective
+    if baseline is None:
+        baseline = current_management_baseline(
+            args.bridges, args.bundle_limit, repair_probability
+        )
+    print(f"current-management baseline (L={args.bundle_limit}) = {baseline!r}")
 
     records = []
     mismatches = []
@@ -164,7 +186,7 @@ def main() -> None:
                 "ObjectiveValue_Exact": f"{stored_objective:.12f}",
                 "RealizedRadius": f"{realized:.6f}",
                 "Slack_D_minus_R": f"{distance_limit - realized:.6f}",
-                "Reduction(%)": f"{100 * (1 - stored_objective / args.baseline_objective):.6f}",
+                "Reduction(%)": f"{100 * (1 - stored_objective / baseline):.6f}",
                 "RegionDiameters": ";".join(
                     f"{value:.3f}" for value in sorted(diameters, reverse=True)
                 ),
