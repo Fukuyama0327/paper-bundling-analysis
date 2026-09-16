@@ -29,7 +29,7 @@ notes/                  # 作業メモ・検討記録（pre_git_migration_invent
 data/                   # 派生データ（data/README.md 参照。生データは data/raw/ か data/external/ に置きGit管理外）
 src/bundling_analysis/  # 再利用可能なコアロジック（下記「数値計算パイプライン」参照）
 scripts/                # CLIとして実行するステップ別スクリプト
-notebooks/              # パイプラインを上から実行して確認するノートブック（下記「プログラムを触るときの起点」）
+notebooks/              # パイプラインを上から実行して確認するノートブック（下記「プログラムを触るときの起点」）と査読対応
 docs/                   # 環境構築・運用ガイド、非接続コードの一覧
 tests/                  # pytest（合成データによる通しテスト、q の出所の検証）
 ```
@@ -98,6 +98,7 @@ tests/                  # pytest（合成データによる通しテスト、q �
 - `tests/test_transition_matrix_provenance.py` — q の出所の検証（推定用データ→推定→保存ファイル→定数の一致）
 - `tests/test_figure_fonts.py` — 本文が読む図がベクタ形式で、Type 3 フォントを含まないことの検査
 - `notebooks/pipeline_walkthrough.ipynb` — パイプライン全体を実行して確認するノートブック（上記「プログラムを触るときの起点」）
+- `notebooks/reviewer_pareto_radius.ipynb` — 査読コメント（実現距離 R(x*) と Z(x*) のトレードオフ）への対応を上から順に確認するノートブック
 
 ## 数値計算パイプライン
 
@@ -125,6 +126,7 @@ tests/                  # pytest（合成データによる通しテスト、q �
 |---|---|
 | `scripts/run_gurobi_districting.py` | 地域分割最適化本体（距離制約D×地域数Mの感度分析、Gurobi必須） |
 | `scripts/reevaluate_optimization_objectives.py` | GurobiのPWL近似結果を厳密な閉形式で再評価（`--input`・`--output` 必須） |
+| `scripts/compute_realized_radius.py` | 保存済み割当から実現した区域内最大距離 R(x*) を集計（Gurobi不要。査読対応） |
 | `scripts/step3_compare_and_report.py` | 現行管理者ベースとの比較レポート（任意。本文の基準値は作図側で計算する） |
 
 図表:
@@ -140,6 +142,7 @@ tests/                  # pytest（合成データによる通しテスト、q �
 | `scripts/make_transition_counts.py` | 健全度遷移の集計表（Table 1） |
 | `scripts/plot_optimization_results.py` | 現行管理との比較表（Table 2）のLaTeX行。図自体は本文未使用 |
 | `scripts/plot_expected_contracts_scaling_analysis.py` | 第4.3節向けの感度分析図（本文へは未挿入） |
+| `scripts/plot_pareto_radius.py` | R(x*) と Z(x*) のトレードオフ図（査読対応。`plot_dm_sensitivity` の図＝英語版 FIG. 6 と差し替えるか併置かは未定） |
 
 非接続・非推奨のもの（`scripts/make_all_figures.py`, `generate_expected_contracts.py`,
 `parallel_contracts.py`, `extract_pdf_text.py`）は `docs/legacy_and_unused.md` を参照。

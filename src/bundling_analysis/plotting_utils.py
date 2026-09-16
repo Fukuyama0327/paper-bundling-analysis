@@ -8,6 +8,18 @@
 
 from __future__ import annotations
 
+#: 地域数 M ごとの色。同じ M が図をまたいで同じ色になるよう、
+#: M を凡例に使う図はすべてここを参照する（`plot_dm_sensitivity.py`,
+#: `plot_pareto_radius.py`）。
+M_COLORS = {
+    1: "#6b7280",
+    2: "#4c6fb1",
+    3: "#238b8e",
+    4: "#cc6c3b",
+    5: "#7a4e9e",
+    6: "#b0435b",
+}
+
 PREFERRED_JAPANESE_FONTS = [
     "Hiragino Sans",
     "Yu Gothic",

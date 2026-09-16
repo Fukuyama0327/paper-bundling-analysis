@@ -22,7 +22,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import M_COLORS, setup_figure_defaults  # noqa: E402
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -33,16 +33,6 @@ from bundling_analysis.expected_contracts import (  # noqa: E402
     expected_contracts,
     repair_probability_from_transition_matrix,
 )
-
-#: Fixed colour per region count M so every figure in the set stays consistent.
-M_COLORS = {
-    1: "#6b7280",
-    2: "#4c6fb1",
-    3: "#238b8e",
-    4: "#cc6c3b",
-    5: "#7a4e9e",
-    6: "#b0435b",
-}
 
 
 def current_management_baseline(bridges_csv: Path, bundle_limit: int, q: float) -> float:
