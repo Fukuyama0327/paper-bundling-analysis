@@ -20,9 +20,16 @@ The output carries one row per optimized case plus one row for the current
 administrative districting (bridges grouped by their managing municipality), which
 is the baseline the reduction column is measured against.
 
-Note that Eq. (18) does not minimize ``R(x)`` among assignments sharing the optimal
-objective value, so ``R(x*)`` is what the solver happened to return, not the smallest
-realized distance attaining ``Z(x*)``. Expect ``R(x*)`` to sit just under ``D``.
+The ``Nondominated`` column marks solutions that are nondominated **among the cases
+present in the solutions pickle** — at the default inputs, the 36 feasible (D, M)
+combinations solved at a single bundling limit L = 5. It is not a statement about the
+continuous Pareto frontier of the underlying problem. Two reasons:
+
+* Only a grid of D and M was solved. A (D, M) between grid points is not represented.
+* Eq. (18) does not minimize ``R(x)`` among assignments sharing the optimal objective
+  value, so ``R(x*)`` is what the solver happened to return, not the smallest realized
+  distance attaining ``Z(x*)``. Expect ``R(x*)`` to sit just under ``D``. A solution
+  with the same ``Z(x*)`` and a smaller ``R(x*)`` may well exist without appearing here.
 
 Usage:
     python scripts/compute_realized_radius.py --output outputs/realized_radius.csv
@@ -123,7 +130,12 @@ def diameter(rows: np.ndarray, distance_matrix: np.ndarray) -> float:
 
 
 def nondominated(points: list[tuple[float, float]]) -> list[bool]:
-    """Minimize both coordinates. Ties on both coordinates stay mutually nondominated."""
+    """Minimize both coordinates, comparing only within ``points``.
+
+    The result is relative to the set passed in — here, the solved (D, M) grid at one
+    bundling limit — not to the problem's true Pareto frontier. Ties on both
+    coordinates stay mutually nondominated.
+    """
     flags = []
     for i, (radius_i, objective_i) in enumerate(points):
         dominated = any(
@@ -274,7 +286,10 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(records)
 
-    print(f"\n非劣解 (Z(x*), R(x*)):")
+    print(
+        f"\n非劣解 (Z(x*), R(x*)) — L={args.bundle_limit} のもとで D と M を変えて得た "
+        f"{len(records) - 1} 解の中での比較:"
+    )
     print(f"{'D':>6} {'M':>3} {'Z*':>9} {'R(x*)':>8} {'削減率(%)':>10} {'求解(s)':>10}")
     for record in records:
         if record["Nondominated"] == 1:

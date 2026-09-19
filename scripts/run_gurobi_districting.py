@@ -299,6 +299,8 @@ def main() -> None:
         "ObjectiveValue_Exact",
         "Difference_PWL_minus_Exact",
         "ElapsedSeconds",
+        "WarmStartSeconds",
+        "TotalSeconds",
         "RegionCounts",
         "PWLNodes",
         "BundleLimit",
@@ -316,6 +318,10 @@ def main() -> None:
             print(f"[case {case_index}/{len(args.cases)}] D={distance_threshold}, M={num_regions}")
 
             warm_start = None
+            # ElapsedSeconds は本計算の model.optimize() だけを測る。ウォームスタートの
+            # 事前解に使った時間は別に控えて、TotalSeconds として合算しておく
+            # （そうしないと、事前解のあるケースの所要時間を過小に報告してしまう）。
+            warm_start_seconds = 0.0
             if warm_start_pwl_nodes is not None and num_regions >= args.warm_start_min_m:
                 print(
                     f"  M={num_regions} >= --warm-start-min-m {args.warm_start_min_m}: "
@@ -333,7 +339,11 @@ def main() -> None:
                     time_limit=args.time_limit,
                     mip_gap=args.mip_gap,
                 )
-                print(f"  事前解(20点PWL): ObjectiveValue_Exact={pre_row['ObjectiveValue_Exact']}")
+                warm_start_seconds = float(pre_row["ElapsedSeconds"])
+                print(
+                    f"  事前解(20点PWL): ObjectiveValue_Exact={pre_row['ObjectiveValue_Exact']}"
+                    f", ElapsedSeconds={warm_start_seconds:.3f}"
+                )
 
             row, assignment = optimize_case(
                 distance_matrix=distance_matrix,
@@ -347,6 +357,11 @@ def main() -> None:
                 time_limit=args.time_limit,
                 mip_gap=args.mip_gap,
                 warm_start=warm_start,
+            )
+            row["WarmStartSeconds"] = f"{warm_start_seconds:.3f}"
+            elapsed = row["ElapsedSeconds"]
+            row["TotalSeconds"] = (
+                f"{float(elapsed) + warm_start_seconds:.3f}" if elapsed != "" else ""
             )
             writer.writerow(row)
             f.flush()
