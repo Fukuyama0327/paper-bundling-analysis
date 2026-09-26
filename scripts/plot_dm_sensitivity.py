@@ -27,6 +27,7 @@ from bundling_analysis.plotting_utils import (  # noqa: E402
     M_MARKER_SIZE_SCALE,
     M_MARKERS,
     figure_size,
+    figure_width,
     setup_figure_defaults,
 )
 
@@ -66,6 +67,15 @@ def main() -> None:
         help="Used only to recompute the current-management baseline.",
     )
     parser.add_argument("--bundle-limit", type=int, default=5)
+    parser.add_argument(
+        "--panel-width-fraction",
+        type=float,
+        default=0.49,
+        help=(
+            "(a)(b) の単独版を作るときの、本文幅に対する配置幅の割合。本文側が "
+            "subfigure を width=0.49\\linewidth で置くなら 0.49 を渡す。"
+        ),
+    )
     parser.add_argument("--output-stem", type=Path, default=Path("figures/dm_sensitivity"))
     args = parser.parse_args()
 
@@ -131,6 +141,45 @@ def main() -> None:
     fig.tight_layout()
     fig.legend(handles, labels, frameon=False, ncol=4, loc="upper center",
                bbox_to_anchor=(0.5, 0.07), columnspacing=1.6, handlelength=2.0)
+
+    # --- (a)(b) の単独版 -----------------------------------------------------
+    # 本文が subfigure で横に並べる場合用。2枚の枠の位置を数値で固定し、
+    # bbox_inches を使わずに保存することで、出力の寸法と軸の位置を完全に揃える
+    # （tight に任せると内容の違いで高さがずれ、(a)(b) の上端が揃わない）。
+    panel_w = figure_width(args.panel_width_fraction)
+    panel_h = panel_w * 1.10
+    margins = dict(left=0.235, right=0.975, top=0.965, bottom=0.315)
+
+    # 凡例は M の対応表なので2枚に同じものを置く。現行区割りの基準線は (a) に
+    # しかないので、凡例に入れずに線の脇へ直接書く（そのほうが線と対応が取れる）。
+    m_handles = [h for h, l in zip(handles, labels) if l.startswith("$M")]
+    m_labels = [l for l in labels if l.startswith("$M")]
+
+    for name, subset, with_baseline in [("a", df, True),
+                                        ("b", df[df["MaxDistance"] >= ZOOM_FROM], False)]:
+        fig_p, ax_p = plt.subplots(figsize=(panel_w, panel_h))
+        draw(ax_p, subset, with_baseline=with_baseline)
+        ax_p.set_ylabel("Expected annual number\nof contracts, $Z$")
+        if name == "a":
+            ax_p.set_xlim(min(df["MaxDistance"]) - 2, max(df["MaxDistance"]) + 2)
+            ax_p.set_ylim(low - 0.06, baseline + 0.14)
+            ax_p.annotate(f"Current districting ({baseline:.4f})",
+                          xy=(min(df["MaxDistance"]) - 1, baseline), xytext=(0, 4),
+                          textcoords="offset points", fontsize=9, color="#333333")
+        else:
+            ax_p.set_xlim(ZOOM_FROM - 1.5, float(subset["MaxDistance"].max()) + 1.5)
+            ax_p.set_xticks(sorted(subset["MaxDistance"].unique()))
+            ax_p.set_ylim(zoom_low - pad, zoom_high + pad)
+        fig_p.subplots_adjust(**margins)
+        fig_p.legend(m_handles, m_labels, frameon=False, ncol=3, loc="lower center",
+                     bbox_to_anchor=(0.5, 0.0), columnspacing=1.2,
+                     handlelength=1.8, labelspacing=0.35)
+        stem = args.output_stem.with_name(f"{args.output_stem.name}_{name}")
+        for ext, kwargs in [("png", {"dpi": 300}), ("svg", {}), ("pdf", {})]:
+            path = stem.with_suffix(f".{ext}")
+            fig_p.savefig(path, **kwargs)
+            print(f"Wrote {path}")
+        plt.close(fig_p)
 
     args.output_stem.parent.mkdir(parents=True, exist_ok=True)
     for ext, kwargs in [("png", {"dpi": 300}), ("svg", {}), ("pdf", {})]:
