@@ -22,7 +22,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import M_COLORS, setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import (  # noqa: E402
+    M_COLORS,
+    M_MARKER_SIZE_SCALE,
+    M_MARKERS,
+    figure_size,
+    setup_figure_defaults,
+)
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -67,27 +73,65 @@ def main() -> None:
     df = pd.read_csv(args.input)
     df = df[df["Status"] == 2]  # keep only solved cases; do not fill gaps
 
-    fig, ax = plt.subplots(figsize=(7.4, 4.8))
+    fig, ax = plt.subplots(figsize=figure_size(0.82, aspect=0.68))
 
     # Baseline (current management) as a labelled horizontal reference line.
-    ax.axhline(baseline, color="#333333", linestyle="--", linewidth=1.4,
-               label=f"Current management ({baseline:.3f})")
+    ax.axhline(baseline, color="#333333", linestyle=(0, (5, 3)), linewidth=1.2,
+               label=f"Current districting ({baseline:.4f})")
 
     print("\nPlotted points (D, M, ObjectiveValue_Exact):")
     for m in sorted(df["M"].unique()):
         sub = df[df["M"] == m].sort_values("MaxDistance")
         color = M_COLORS.get(int(m), None)
+        # D が大きい領域では M ごとの曲線がほぼ重なる。色だけでは読み取れないので
+        # マーカーの形も変える（査読コメント「線が重複して見づらい」2026-09-25）。
+        # 形と色の対応は pareto_radius など他の図と共通。
         ax.plot(sub["MaxDistance"], sub["ObjectiveValue_Exact"],
-                marker="o", linewidth=1.8, markersize=5, color=color, label=f"$M = {int(m)}$")
+                marker=M_MARKERS.get(int(m), "o"),
+                markersize=4.5 * M_MARKER_SIZE_SCALE.get(int(m), 1.0),
+                markeredgecolor="white", markeredgewidth=0.5,
+                linewidth=1.3, color=color, label=f"$M = {int(m)}$")
         for _, row in sub.iterrows():
             print(f"  D={row['MaxDistance']:>4}, M={int(m)}: {row['ObjectiveValue_Exact']:.6f}")
 
-    ax.set_xlabel("Distance limit $D$ (km)")
-    ax.set_ylabel("Expected annual number of contracts")
+    ax.set_xlabel("Distance limit, $D$ (km)")
+    # 縦軸は各ケースの目的関数値、すなわち総和 Z = sum_k f(N_k, L)
+    ax.set_ylabel("Expected annual number of contracts, $Z$")
     ax.set_xlim(min(df["MaxDistance"]) - 2, max(df["MaxDistance"]) + 2)
-    ax.set_ylim(bottom=0)
+    # 0 から描くと、M 違いの差（D を固定すると 0.001〜0.01 程度しかない）が
+    # 潰れて1本の線に見える。データの範囲に合わせて縦を使い切る。
+    low = float(df["ObjectiveValue_Exact"].min())
+    # 下側は凡例を置く帯を空けておく（曲線に重ねない）。
+    ax.set_ylim(low - 0.34, baseline + 0.12)
     ax.grid(color="#d1d5db", linewidth=0.7)
-    ax.legend(frameon=False, ncol=2, fontsize=9)
+    ax.legend(frameon=False, ncol=4, loc="lower center", columnspacing=1.4,
+              handlelength=2.0)
+
+    # D が大きい領域では曲線がほぼ重なる。実際、D を固定したときの M 違いの差は
+    # D=25〜35 では 0.004 程度しかなく、どんな倍率でも分離できない。一方、距離制約が
+    # 効かなくなる D>=40 では 1.193〜1.244 と 0.05 ほど開くので、そこだけ拡大して
+    # M の順序を読めるようにする（査読コメント「線が重複して見づらい」2026-09-25）。
+    zoom = df[df["MaxDistance"] >= 40]
+    axins = ax.inset_axes([0.40, 0.55, 0.36, 0.34], facecolor="white")
+    for m in sorted(zoom["M"].unique()):
+        sub = zoom[zoom["M"] == m].sort_values("MaxDistance")
+        axins.plot(sub["MaxDistance"], sub["ObjectiveValue_Exact"],
+                   marker=M_MARKERS.get(int(m), "o"),
+                   markersize=3.4 * M_MARKER_SIZE_SCALE.get(int(m), 1.0),
+                   markeredgecolor="white", markeredgewidth=0.4,
+                   linewidth=1.0, color=M_COLORS.get(int(m)))
+    axins.set_xlim(38.5, 51.5)
+    axins.set_ylim(float(zoom["ObjectiveValue_Exact"].min()) - 0.008,
+                   float(zoom["ObjectiveValue_Exact"].max()) + 0.008)
+    axins.set_xticks([40, 45, 50])
+    axins.grid(color="#e5e7eb", linewidth=0.6)
+    axins.set_axisbelow(True)
+    axins.tick_params(labelsize=6.5, pad=1.5)
+    axins.set_title(r"Detail: $D \geq 40$ km", fontsize=7, pad=2.5, color="#4b5563")
+    for spine in axins.spines.values():
+        spine.set_color("#9ca3af")
+        spine.set_linewidth(0.7)
+
     fig.tight_layout()
 
     args.output_stem.parent.mkdir(parents=True, exist_ok=True)

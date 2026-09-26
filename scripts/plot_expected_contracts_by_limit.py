@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import figure_size, setup_figure_defaults  # noqa: E402
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -44,17 +44,22 @@ def main() -> None:
     _, q = repair_probability_from_transition_matrix(DEFAULT_TRANSITION_MATRIX)
     n_values = list(range(1, args.max_n + 1))
 
-    fig, ax = plt.subplots(figsize=(7.2, 4.6))
+    fig, ax = plt.subplots(figsize=figure_size(0.78, aspect=0.64))
+    # L が大きいほど曲線が重なる（L=7 と L=10 はほぼ一致する）ので、色だけでなく
+    # 線種も変えて区別する。査読で「色分けが見づらい」と指摘された（2026-09-25）。
     colors = ["#6b7280", "#4c6fb1", "#238b8e", "#cc6c3b", "#7a4e9e"]
-    for limit, color in zip(args.bundle_limits, colors):
+    styles = ["-", "--", "-", "-.", ":"]
+    for limit, color, style in zip(args.bundle_limits, colors, styles):
         y_values = [expected_contracts(n, limit, q) for n in n_values]
-        ax.plot(n_values, y_values, linewidth=2.0, color=color, label=rf"$L={limit}$")
+        ax.plot(n_values, y_values, linewidth=1.6, color=color, linestyle=style,
+                label=rf"$L={limit}$")
 
-    ax.set_xlabel("Number of bridges in an area, $N$")
+    ax.set_xlabel("Number of bridges in a management area, $N$")
     ax.set_ylabel("Expected annual number of contracts, $f(N,L)$")
     ax.set_xlim(0, args.max_n + 20)
     ax.set_ylim(bottom=0)
-    ax.grid(axis="both", color="#d1d5db", linewidth=0.7)
+    # グリッド線は引かない。枠なし凡例の文字を横切って読みにくくなるため
+    # （査読コメント「グリッド線は不要かも、最低限、凡例と被らないように」）。
     ax.legend(frameon=False, loc="upper left")
     fig.tight_layout()
 

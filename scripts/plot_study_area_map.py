@@ -21,7 +21,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import figure_size, setup_figure_defaults  # noqa: E402
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -70,14 +70,19 @@ def main() -> None:
     counts = df["管理者"].value_counts()
     print(f"bridges plotted = {len(df)} (sum of municipality counts = {int(counts.sum())})")
 
-    fig, ax = plt.subplots(figsize=(7.6, 7.2))
+    fig, ax = plt.subplots(figsize=figure_size(0.82, aspect=0.95))
     gdf.plot(ax=ax, facecolor="#f4f4f2", edgecolor="#555555", linewidth=1.0, zorder=1)
 
-    for muni in MUNICIPALITIES:
+    # 凡例の記号を本文の記法に合わせる。現行の行政区割りは6市町＝6つの管理エリアなので、
+    # 各市町の橋梁数は N_k で表せる。索引は本文の N_1 >= N_2 >= ... という規約に従い、
+    # 橋梁数の降順で振る（査読コメント 2026-09-25）。
+    ordered = sorted(MUNICIPALITIES, key=lambda m: -(df["管理者"] == m).sum())
+    for index, muni in enumerate(ordered, start=1):
         sub = df[df["管理者"] == muni]
-        n = len(sub)
-        ax.scatter(sub["経度"], sub["緯度"], s=16, color=COLORS[muni], edgecolor="white",
-                   linewidth=0.3, zorder=3, label=f"{ROMAJI[muni]} (n={n})")
+        # マーカーは少し大きく（同コメント）。
+        ax.scatter(sub["経度"], sub["緯度"], s=22, color=COLORS[muni], edgecolor="white",
+                   linewidth=0.35, zorder=3,
+                   label=rf"{ROMAJI[muni]} ($N_{{{index}}}={len(sub)}$)")
 
     minx, miny, maxx, maxy = union.bounds
     mx, my = (maxx - minx) * 0.03, (maxy - miny) * 0.03
@@ -88,7 +93,10 @@ def main() -> None:
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
-    ax.legend(frameon=True, loc="upper right", fontsize=9, title=f"Managing municipality (N={len(df)})")
+    # 凡例は地図の外（下）へ出す。枠内に置くと橋梁プロットに重なる（同コメント）。
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.01), ncol=3,
+              handletextpad=0.4, columnspacing=1.6,
+              title=rf"Managing municipality ($|\mathcal{{I}}|={len(df)}$)")
     fig.tight_layout()
 
     args.output_stem.parent.mkdir(parents=True, exist_ok=True)

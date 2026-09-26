@@ -21,6 +21,21 @@ any update.
   result CSV (5 today), i.e. the L that actually produced the paper's results;
   ``--main-bundle-limit`` overrides it.
 
+出力はパネルごとに分かれる。
+
+* ``expected_contracts_scaling_analysis.pdf``   (a)(b) を横に並べた2枚組
+* ``expected_contracts_scaling_analysis_a.pdf`` (a) 単独
+* ``expected_contracts_scaling_analysis_b.pdf`` (b) 単独
+* ``expected_contracts_saturation.pdf``         (c) 単独
+
+本文はこのうち必要なものをそのまま ``\includegraphics`` で読む。
+以前は3枚組から ``viewport`` で切り出していたが、切り出し座標が図の実寸に依存し、
+ラベルを変えるだけでパネルがずれるため、2つのファイルに分けた（2026-09-06）。
+3枚を1枚にまとめたい場合は ``--with-saturation-panel`` を渡す。
+
+図中にはタイトルもパネル記号も入れない（説明はTeXのキャプションに書く）。
+本文のキャプションが言う (a)(b) は、2枚組の並び順（左・右）で対応する。
+
 Usage:
     python scripts/plot_expected_contracts_scaling_analysis.py --max-n 1000
 """
@@ -40,7 +55,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import figure_size, setup_figure_defaults  # noqa: E402
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -115,90 +130,170 @@ def probability_two_or_more(n: int, q: float) -> float:
     return max(0.0, 1.0 - (1.0 - q) ** (n - 1) * (1.0 + (n - 1) * q))
 
 
+def saturation_rate(reduction: float, bundle_limit: int) -> float:
+    """Share of the theoretical ceiling ``1 - 1/L`` that a district of size N attains.
+
+    ``eta(N,L) = rho(N,L) / (1 - 1/L)`` answers "how much of what bundling could
+    ever deliver at this L has been reached", which is what makes district sizes
+    comparable across different L.
+    """
+    ceiling = 1.0 - 1.0 / bundle_limit
+    return float("nan") if ceiling <= 0 else reduction / ceiling
+
+
 def build_table(
     n_values: list[int], bundle_limits: list[int], q: float
-) -> tuple[pd.DataFrame, dict[int, list[float]], list[float]]:
-    """Compute every series once; the figure and the CSV share these numbers."""
+) -> tuple[pd.DataFrame, dict[int, list[float]], dict[int, list[float]], list[float]]:
+    """Compute every series once; the figures and the CSVs share these numbers."""
     prob = [probability_two_or_more(n, q) for n in n_values]
     contracts: dict[int, list[float]] = {}
     reduction: dict[int, list[float]] = {}
+    saturation: dict[int, list[float]] = {}
     for limit in bundle_limits:
         print(f"  computing f(N, L={limit}) for N = 1..{n_values[-1]} ...", flush=True)
         values = [expected_contracts(n, limit, q) for n in n_values]
         contracts[limit] = values
         reduction[limit] = [1.0 - v / (n * q) for n, v in zip(n_values, values)]
+        saturation[limit] = [saturation_rate(r, limit) for r in reduction[limit]]
 
     table = pd.DataFrame({"N": n_values, "probability_two_or_more_demands": prob})
     for limit in bundle_limits:
         table[f"expected_contracts_L{limit}"] = contracts[limit]
         table[f"reduction_rate_L{limit}"] = reduction[limit]
-    return table, reduction, prob
+        table[f"saturation_rate_L{limit}"] = saturation[limit]
+    return table, reduction, saturation, prob
+
+
+def threshold_table(
+    n_values: list[int], saturation: dict[int, list[float]], reduction: dict[int, list[float]],
+    thresholds: list[float],
+) -> pd.DataFrame:
+    """First district size at which each ceiling-attainment level is reached.
+
+    ``eta`` increases with N, so the first crossing is the smallest district that
+    attains the level. A level not reached within the computed range is reported
+    with an empty N so it cannot be mistaken for a small number.
+    """
+    rows = []
+    for limit, values in saturation.items():
+        ceiling = 1.0 - 1.0 / limit
+        for level in thresholds:
+            index = next((i for i, v in enumerate(values) if v >= level), None)
+            rows.append({
+                "bundle_limit": limit,
+                "theoretical_limit": ceiling,
+                "target_saturation": level,
+                "N": n_values[index] if index is not None else "",
+                "reduction_rate": reduction[limit][index] if index is not None else "",
+                "saturation_rate": values[index] if index is not None else "",
+                "reached_within_range": index is not None,
+            })
+    return pd.DataFrame(rows)
+
+
+def draw_saturation(ax, n_values, saturation, bundle_limits, n_study, main_limit,
+                    thresholds, panel_label: str = "") -> None:
+    """Draw eta(N,L): how much of the ceiling 1 - 1/L a district of size N attains."""
+    max_n = n_values[-1]
+    for level in thresholds:
+        ax.axhline(level, color="#d1d5db", linestyle="-", linewidth=0.8, zorder=1)
+        ax.annotate(f"{level:.0%}", xy=(max_n, level), xytext=(-2, 3),
+                    textcoords="offset points", ha="right", fontsize=7.5, color="#6b7280")
+    for index, limit in enumerate(bundle_limits):
+        ax.plot(n_values, saturation[limit], linewidth=2.0,
+                color=color_for_limit(limit, index), label=rf"$L={limit}$", zorder=2)
+    if n_study <= max_n:
+        ax.axvline(n_study, color="#6b7280", linestyle=(0, (5, 3)), linewidth=1.2)
+    if main_limit in saturation and n_study <= max_n:
+        value = saturation[main_limit][n_values.index(n_study)]
+        ax.plot([n_study], [value], marker="o", markersize=6, color="#1f2937", zorder=3)
+        ax.annotate(f"$N={n_study}$, $L={main_limit}$: {value:.1%}",
+                    xy=(n_study, value), xytext=(10, -20), textcoords="offset points",
+                    color="#1f2937")
+    ax.set_xlabel("Number of bridges in a management area, $N$")
+    ax.set_ylabel(r"Share of theoretical upper bound attained, $\eta$")
+    # 図中には見出しもパネル記号も置かない（説明はTeXのキャプションに書く）。
+    # 本文のキャプションが言う (a)(b) は、並び順（左・右）で対応させる。
+    ax.set_xlim(0, max_n)
+    ax.set_ylim(0, 1.02)
+    ax.grid(axis="x", color="#d1d5db", linewidth=0.7)
+    ax.legend(frameon=False, loc="lower right", ncol=2)
+
+
+def draw_probability(ax, n_values, prob, q, n_study, highlight_n) -> None:
+    """(a) 同一年に2件以上の補修需要が発生する確率。"""
+    max_n = n_values[-1]
+    ax.plot(n_values, prob, linewidth=2.0, color="#4c6fb1")
+    if n_study <= max_n:
+        ax.axvline(n_study, color="#6b7280", linestyle=(0, (5, 3)), linewidth=1.2)
+    for n in [n for n in sorted({*highlight_n, n_study}) if 1 <= n <= max_n]:
+        value = probability_two_or_more(n, q)
+        ax.plot([n], [value], marker="o", markersize=5, color="#1f2937", zorder=3)
+        ax.annotate(f"$N={n}$: {value:.3f}", xy=(n, value),
+                    xytext=(6, -12 if n == n_study else 6), textcoords="offset points",
+                    color="#1f2937")
+    ax.set_xlabel("Number of bridges in a management area, $N$")
+    ax.set_ylabel(r"Probability of two or more repair demands, $\Pr(X \geq 2)$")
+    ax.set_xlim(0, max_n)
+    ax.set_ylim(0, 1.02)
+    ax.grid(color="#d1d5db", linewidth=0.7)
+
+
+def draw_reduction(ax, n_values, reduction, bundle_limits, n_study, main_limit) -> None:
+    """(b) 個別発注を基準とした期待契約件数の低減率。"""
+    max_n = n_values[-1]
+    for index, limit in enumerate(bundle_limits):
+        color = color_for_limit(limit, index)
+        ax.plot(n_values, reduction[limit], linewidth=2.0, color=color, label=rf"$L={limit}$")
+        ax.axhline(1.0 - 1.0 / limit, color=color, linestyle=(0, (1.5, 1.5)),
+                   linewidth=1.2)
+    if n_study <= max_n:
+        ax.axvline(n_study, color="#6b7280", linestyle=(0, (5, 3)), linewidth=1.2)
+    if main_limit in reduction and n_study <= max_n:
+        value = reduction[main_limit][n_values.index(n_study)]
+        ax.plot([n_study], [value], marker="o", markersize=6, color="#1f2937", zorder=3)
+        ax.annotate(f"$N={n_study}$, $L={main_limit}$: {value:.3f}", xy=(n_study, value),
+                    xytext=(10, -26), textcoords="offset points", color="#1f2937")
+    ax.plot([], [], color="#6b7280", linestyle=(0, (1.5, 1.5)), linewidth=1.2,
+            label=r"$1 - 1/L$ (upper bound)")
+    ax.set_xlabel("Number of bridges in a management area, $N$")
+    ax.set_ylabel(r"Reduction rate, $\rho$")
+    ax.set_xlim(0, max_n)
+    # (a) と同じ上限にする。片方だけ 1.0 で切ると、並べたとき (a) の上だけ
+    # 余白があるように見える（査読コメント 2026-09-25）。
+    ax.set_ylim(0, 1.02)
+    ax.grid(color="#d1d5db", linewidth=0.7)
+    ax.legend(frameon=False, loc="lower right", ncol=2)
 
 
 def plot(
     n_values: list[int],
     prob: list[float],
     reduction: dict[int, list[float]],
+    saturation: dict[int, list[float]],
     bundle_limits: list[int],
     q: float,
     n_study: int,
     main_limit: int,
     highlight_n: list[int],
     output_stem: Path,
+    thresholds: list[float],
+    with_saturation_panel: bool = True,
 ) -> list[Path]:
-    fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=(11.6, 4.6))
-    max_n = n_values[-1]
+    if with_saturation_panel:
+        fig, (ax_a, ax_b, ax_c) = plt.subplots(1, 3, figsize=figure_size(1.0, aspect=0.30))
+    else:
+        # (a) の y 軸ラベル「Probability of two or more repair demands, ...」は長いので、
+        # パネルを低くすると端が切れる。縦は余裕をもって取る。
+        fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=figure_size(1.0, aspect=0.56))
+        ax_c = None
+    draw_probability(ax_a, n_values, prob, q, n_study, highlight_n)
+    draw_reduction(ax_b, n_values, reduction, bundle_limits, n_study, main_limit)
 
-    # --- Panel (a): probability of two or more demands in the same year -------
-    ax_a.plot(n_values, prob, linewidth=2.0, color="#4c6fb1")
-    if n_study <= max_n:
-        ax_a.axvline(n_study, color="#9ca3af", linestyle="--", linewidth=1.0)
-    marks = [n for n in sorted({*highlight_n, n_study}) if 1 <= n <= max_n]
-    for n in marks:
-        value = probability_two_or_more(n, q)
-        ax_a.plot([n], [value], marker="o", markersize=5, color="#1f2937", zorder=3)
-        ax_a.annotate(
-            f"$N={n}$: {value:.3f}",
-            xy=(n, value),
-            xytext=(6, -12 if n == n_study else 6),
-            textcoords="offset points",
-            fontsize=9,
-            color="#1f2937",
-        )
-    ax_a.set_xlabel("Number of bridges in an area, $N$")
-    ax_a.set_ylabel(r"$\Pr(X \geq 2)$")
-    ax_a.set_title("(a) Probability of two or more repair demands\nin the same year",
-                   fontsize=10)
-    ax_a.set_xlim(0, max_n)
-    ax_a.set_ylim(0, 1.02)
-    ax_a.grid(color="#d1d5db", linewidth=0.7)
-
-    # --- Panel (b): reduction rate against individual ordering ----------------
-    for index, limit in enumerate(bundle_limits):
-        color = color_for_limit(limit, index)
-        ax_b.plot(n_values, reduction[limit], linewidth=2.0, color=color, label=rf"$L={limit}$")
-        ax_b.axhline(1.0 - 1.0 / limit, color=color, linestyle=":", linewidth=1.1, alpha=0.8)
-    if n_study <= max_n:
-        ax_b.axvline(n_study, color="#9ca3af", linestyle="--", linewidth=1.0)
-    if main_limit in reduction and n_study <= max_n:
-        value = reduction[main_limit][n_values.index(n_study)]
-        ax_b.plot([n_study], [value], marker="o", markersize=6, color="#1f2937", zorder=3)
-        ax_b.annotate(
-            f"$N={n_study}$, $L={main_limit}$: {value:.3f}",
-            xy=(n_study, value),
-            xytext=(10, -26),
-            textcoords="offset points",
-            fontsize=9,
-            color="#1f2937",
-        )
-    ax_b.plot([], [], color="#9ca3af", linestyle=":", linewidth=1.1, label=r"$1 - 1/L$ (limit)")
-    ax_b.set_xlabel("Number of bridges in an area, $N$")
-    ax_b.set_ylabel("Reduction rate vs. individual ordering")
-    ax_b.set_title("(b) Reduction rate of the expected annual\nnumber of contracts", fontsize=10)
-    ax_b.set_xlim(0, max_n)
-    ax_b.set_ylim(0, 1.0)
-    ax_b.grid(color="#d1d5db", linewidth=0.7)
-    ax_b.legend(frameon=False, loc="lower right", fontsize=9, ncol=2)
+    # --- Panel (c): share of the theoretical ceiling that is attained ---------
+    if ax_c is not None:
+        draw_saturation(ax_c, n_values, saturation, bundle_limits, n_study, main_limit,
+                        thresholds)
 
     fig.tight_layout()
     output_stem.parent.mkdir(parents=True, exist_ok=True)
@@ -244,6 +339,28 @@ def main() -> None:
         type=Path,
         default=Path("outputs/expected_contracts_scaling_analysis.csv"),
     )
+    parser.add_argument(
+        "--thresholds-output",
+        type=Path,
+        default=Path("outputs/expected_contracts_scaling_thresholds.csv"),
+        help="District size at which each ceiling-attainment level is first reached.",
+    )
+    parser.add_argument(
+        "--saturation-thresholds", type=float, nargs="+",
+        default=[0.50, 0.75, 0.80, 0.90, 0.95],
+        help="Ceiling-attainment levels to report.",
+    )
+    parser.add_argument(
+        "--saturation-stem",
+        type=Path,
+        default=Path("figures/expected_contracts_saturation"),
+        help="Stand-alone version of panel (c). Pass an empty string to skip it.",
+    )
+    parser.add_argument(
+        "--with-saturation-panel", action="store_true",
+        help="Append panel (c) to the main figure. 既定では出力しない: 本文は (a)(b) の"
+             " 2枚組をFigure 4、(c) の単独図をFigure 5として別々に読むため。",
+    )
     args = parser.parse_args()
 
     if args.max_n < 1:
@@ -267,7 +384,7 @@ def main() -> None:
               "annotations are omitted from the figure")
 
     n_values = list(range(1, args.max_n + 1))
-    table, reduction, prob = build_table(n_values, args.bundle_limits, q)
+    table, reduction, saturation, prob = build_table(n_values, args.bundle_limits, q)
 
     table.insert(0, "repair_probability_q", q)
     table.insert(1, "transition_matrix_name", matrix_name)
@@ -276,19 +393,62 @@ def main() -> None:
     table.to_csv(args.csv_output, index=False)
     print(f"Wrote {args.csv_output}")
 
-    for path in plot(n_values, prob, reduction, args.bundle_limits, q,
-                     n_study, main_limit, args.highlight_n, args.output_stem):
+    thresholds = sorted(args.saturation_thresholds)
+    thresholds_table = threshold_table(n_values, saturation, reduction, thresholds)
+    args.thresholds_output.parent.mkdir(parents=True, exist_ok=True)
+    thresholds_table.to_csv(args.thresholds_output, index=False)
+    print(f"Wrote {args.thresholds_output}")
+
+    for path in plot(n_values, prob, reduction, saturation, args.bundle_limits, q,
+                     n_study, main_limit, args.highlight_n, args.output_stem, thresholds,
+                     with_saturation_panel=args.with_saturation_panel):
         print(f"Wrote {path}")
+
+    # パネル単体のファイル。本文のレイアウトを組みやすいよう、(a)(b) を1枚ずつでも出す。
+    # 座標指定で切り出す必要がないので、図の寸法が変わっても本文は壊れない。
+    for name, drawer in [
+        ("a", lambda ax: draw_probability(ax, n_values, prob, q, n_study, args.highlight_n)),
+        ("b", lambda ax: draw_reduction(ax, n_values, reduction, args.bundle_limits,
+                                        n_study, main_limit)),
+    ]:
+        fig, ax = plt.subplots(figsize=figure_size(0.78, aspect=0.70))
+        drawer(ax)
+        fig.tight_layout()
+        stem = args.output_stem.with_name(f"{args.output_stem.name}_{name}")
+        for ext, kwargs in [("png", {"dpi": 300}), ("svg", {}), ("pdf", {})]:
+            path = stem.with_suffix(f".{ext}")
+            fig.savefig(path, bbox_inches="tight", **kwargs)
+            print(f"Wrote {path}")
+        plt.close(fig)
+
+    # 独立版の (c)。3枚並べると各パネルが細くなるため、単独でも使えるようにしておく。
+    if str(args.saturation_stem):
+        fig, ax = plt.subplots(figsize=figure_size(0.78, aspect=0.66))
+        draw_saturation(ax, n_values, saturation, args.bundle_limits, n_study, main_limit,
+                        thresholds, panel_label="")   # 図中タイトルなし
+        pass  # 単独図は説明をTeXのキャプションに任せる（図中タイトルなし）
+        fig.tight_layout()
+        args.saturation_stem.parent.mkdir(parents=True, exist_ok=True)
+        for ext, kwargs in [("png", {"dpi": 300}), ("svg", {}), ("pdf", {})]:
+            path = args.saturation_stem.with_suffix(f".{ext}")
+            fig.savefig(path, bbox_inches="tight", **kwargs)
+            print(f"Wrote {path}")
+        plt.close(fig)
 
     print("\n--- key values ---")
     for n in sorted({*args.highlight_n, n_study}):
         print(f"P(X>=2 | N={n}) = {probability_two_or_more(n, q):.6f}")
     for limit in args.bundle_limits:
         f_study = expected_contracts(n_study, limit, q)
+        rho = 1.0 - f_study / (n_study * q)
         print(f"N={n_study}, L={limit}: f = {f_study:.6f}, "
-              f"reduction = {1.0 - f_study / (n_study * q):.6f} "
-              f"(ceiling {1.0 - 1.0 / limit:.6f})")
+              f"reduction = {rho:.6f} (ceiling {1.0 - 1.0 / limit:.6f}, "
+              f"saturation = {saturation_rate(rho, limit):.4f})")
     print(f"individual ordering at N={n_study}: N*q = {n_study * q:.6f}")
+
+    print("\n--- district size needed to attain each share of the ceiling ---")
+    pivot = thresholds_table.pivot(index="bundle_limit", columns="target_saturation", values="N")
+    print(pivot.to_string())
 
 
 if __name__ == "__main__":

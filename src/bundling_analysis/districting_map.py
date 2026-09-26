@@ -138,7 +138,7 @@ def plot_voronoi_map(
     title: str | None = None,
     ax=None,
     show_legend: bool = True,
-    point_size: float = 14.0,
+    point_size: float = 20.0,
 ):
     """Voronoi ポリゴン＋橋梁点（ともに地域色）を描く。
 
@@ -163,8 +163,12 @@ def plot_voronoi_map(
     if boundary_gdf is not None:
         boundary_gdf.plot(ax=ax, facecolor="none", edgecolor="#555555", linewidth=0.9, zorder=1)
 
+    # 凡例の番号は橋梁数の降順に振る。本文の N_1 >= N_2 >= ... というラベリング規約、
+    # および figures/region_breakdown の段の並びと一致させるため（査読コメント 2026-09-25）。
+    ranked = sorted(cluster_polygons.items(),
+                    key=lambda item: (-item[1]["bridge_count"], item[0]))
     legend_elements = []
-    for cluster_id, info in sorted(cluster_polygons.items()):
+    for rank, (cluster_id, info) in enumerate(ranked, start=1):
         color = colors[cluster_id % len(colors)]
         poly = info["polygon"]
         parts = [poly] if poly.geom_type == "Polygon" else list(getattr(poly, "geoms", []))
@@ -173,7 +177,7 @@ def plot_voronoi_map(
             ax.fill(x, y, alpha=0.35, fc=color, ec=color, linewidth=1.2, zorder=2)
         legend_elements.append(
             mpatches.Patch(facecolor=color, edgecolor=color, alpha=0.6,
-                           label=f"Region {cluster_id + 1} ({info['bridge_count']})")
+                           label=f"Management area {rank} ({info['bridge_count']})")
         )
 
     for cid in range(n_regions):
@@ -197,5 +201,9 @@ def plot_voronoi_map(
         ax.set_title(title, fontsize=12 if show_legend else 7,
                      fontweight="bold" if show_legend else "normal")
     if show_legend:
-        ax.legend(handles=legend_elements, loc="upper right", fontsize=9, frameon=True)
+        # 凡例は地図の外（下）へ出す。枠内に置くと橋梁プロットや面に重なる。
+        # 枠線も外す（査読コメント 2026-09-25）。
+        ncol = min(len(legend_elements), 3)
+        ax.legend(handles=legend_elements, loc="upper center", bbox_to_anchor=(0.5, -0.01),
+                  ncol=ncol, frameon=False, handletextpad=0.5, columnspacing=1.6)
     return fig, ax

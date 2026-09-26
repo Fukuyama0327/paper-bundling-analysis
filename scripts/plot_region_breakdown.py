@@ -23,7 +23,11 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import (  # noqa: E402
+    M_COLORS,
+    figure_size,
+    setup_figure_defaults,
+)
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
@@ -64,8 +68,9 @@ def main() -> None:
     parser.add_argument(
         "--cases",
         nargs="+",
-        default=["25:3", "35:3", "40:1"],
-        help="Representative D:M cases (default 25:3 35:3 40:1).",
+        default=["25:3", "30:2", "40:1"],
+        help="Representative D:M cases (default 25:3 30:2 40:1; kept in step with "
+             "the map cases in make_districting_maps.py).",
     )
     parser.add_argument("--bundle-limit", type=int, default=5)
     parser.add_argument("--output-stem", type=Path, default=Path("figures/region_breakdown"))
@@ -76,8 +81,7 @@ def main() -> None:
     df = pd.read_csv(args.input)
     cases = [parse_case(c) for c in args.cases]
 
-    fig, ax = plt.subplots(figsize=(6.8, 4.6))
-    cmap = plt.cm.viridis
+    fig, ax = plt.subplots(figsize=figure_size(0.82, aspect=0.66))
     labels = [f"$D={int(d)}$ km,\n$M={m}$" for d, m in cases]
     x = range(len(cases))
 
@@ -88,11 +92,15 @@ def main() -> None:
         contribs = [expected_contracts(n, args.bundle_limit, q) for n in counts]
         bottom = 0.0
         for r, (n, fval) in enumerate(zip(counts, contribs)):
-            color = cmap(r / max(len(counts) - 1, 1))
+            # 配色は viridis をやめ、他の図と共通の系統（M_COLORS）に揃える。
+            # 段の索引がそのまま管理エリアの番号になる。
+            color = M_COLORS.get(r + 1, "#6b7280")
             ax.bar(xi, fval, bottom=bottom, width=0.6, color=color, edgecolor="white", linewidth=0.6)
             if fval > 0.04:  # annotate region size only where the segment is readable
-                ax.text(xi, bottom + fval / 2, f"$N_m$={n}", ha="center", va="center",
-                        fontsize=8, color="white")
+                # counts は降順なので、下の段から N_1, N_2, ... となり、
+                # 本文の N_1 >= N_2 >= ... というラベリング規約と一致する。
+                ax.text(xi, bottom + fval / 2, f"$N_{{{r + 1}}}$={n}", ha="center",
+                        va="center", fontsize=8, color="white")
             bottom += fval
             table_rows.append({"D": d, "M": m, "region_rank": r + 1, "N_m": n,
                                "f_Nm": f"{fval:.6f}"})
@@ -100,15 +108,17 @@ def main() -> None:
         target = exact_objective(df, d, m)
         ok = abs(total - target) < 1e-9
         all_ok = all_ok and ok
-        ax.text(xi, bottom + 0.02, f"{total:.3f}", ha="center", va="bottom", fontsize=9)
+        ax.text(xi, bottom + 0.02, f"{total:.3f}", ha="center", va="bottom")
         print(f"D={d}, M={m}: sum f(N_m)={total:.9f} vs CSV Exact={target:.9f} "
               f"-> {'OK' if ok else 'MISMATCH'}  (N_m={counts})")
 
     ax.set_xticks(list(x))
     ax.set_xticklabels(labels)
+    # 各段は地域ごとの f(N_m,L)、棒全体の高さは総和 Z。両方が載る軸なので記号は付けない
     ax.set_ylabel("Expected annual number of contracts")
     ax.set_ylim(bottom=0)
     ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
+    ax.set_axisbelow(True)   # グリッド線が棒の上を横切らないようにする
     fig.tight_layout()
 
     args.output_stem.parent.mkdir(parents=True, exist_ok=True)

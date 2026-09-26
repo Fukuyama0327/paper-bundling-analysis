@@ -24,59 +24,46 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from bundling_analysis.plotting_utils import setup_figure_defaults  # noqa: E402
+from bundling_analysis.plotting_utils import figure_size, setup_figure_defaults  # noqa: E402
 
 # 論文用のベクタ出力設定（PDF内の文字をType 3ではなくTrueTypeで埋め込む）。
 # 多くの学術誌がType 3を受け付けないため、保存前に必ず適用する。
 setup_figure_defaults()
 
+#: 他の図の配色（plotting_utils の M_COLORS）と同系統に揃える。
+HIST_COLOR = "#4c6fb1"
+MEAN_COLOR = "#cc6c3b"
+MEDIAN_COLOR = "#238b8e"
+
 
 def plot_interval_histogram(intervals: pd.Series, output_stem: Path, bins: int = 20) -> list[Path]:
-    """点検間隔ヒストグラムを描き、SVG/PDF/PNGで保存する。"""
-    try:
-        import seaborn as sns
+    """点検間隔ヒストグラムを描き、SVG/PDF/PNGで保存する。
 
-        sns.set_theme(
-            style="whitegrid",
-            rc={
-                "font.family": "serif",
-                "font.serif": ["Times New Roman"],
-                "axes.facecolor": "white",
-            },
-        )
-        use_seaborn = True
-    except ImportError:
-        plt.rcParams["font.family"] = "serif"
-        use_seaborn = False
-
-    fig, ax = plt.subplots(figsize=(7.5, 4.5))
-    if use_seaborn:
-        import seaborn as sns
-
-        sns.histplot(
-            intervals, bins=bins, ax=ax, color="#4C72B0", alpha=0.8,
-            edgecolor="#303030", linewidth=1.0, stat="count", element="bars", fill=True,
-        )
-    else:
-        ax.hist(intervals, bins=bins, color="#4C72B0", alpha=0.8,
-                edgecolor="#303030", linewidth=1.0)
+    以前は seaborn の ``whitegrid`` テーマを当て、さらに軸の背景を ``#f5f5f5`` で
+    塗っていた。そのためこの図だけ灰色地・白いグリッド線・枠付き凡例という
+    別系統の見た目になり、査読で「灰色背景を白色に、全てのグラフでデザインが
+    大きく異ならないように」と指摘された（2026-09-25）。seaborn は書体設定まで
+    上書きするので、依存ごと外して他の図と同じ素の matplotlib に揃えてある。
+    """
+    fig, ax = plt.subplots(figsize=figure_size(0.75, aspect=0.60))
+    ax.hist(intervals, bins=bins, color=HIST_COLOR, edgecolor="white", linewidth=0.6)
 
     mean_val = float(intervals.mean())
     median_val = float(intervals.median())
-    ax.axvline(mean_val, color="#FF7F0E", linestyle="--", linewidth=1.6,
+    ax.axvline(mean_val, color=MEAN_COLOR, linestyle="--", linewidth=1.4,
                label=f"Mean = {mean_val:.2f}")
-    ax.axvline(median_val, color="#2CA02C", linestyle="-.", linewidth=1.6,
+    ax.axvline(median_val, color=MEDIAN_COLOR, linestyle="-.", linewidth=1.4,
                label=f"Median = {median_val:.2f}")
-    ax.set_xlabel("Interval (year)")
-    ax.set_ylabel("Frequency")
+    ax.set_xlabel("Inspection interval (years)")
+    ax.set_ylabel("Number of transitions")
     ax.set_ylim(bottom=0)
     ax.set_xlim(left=0)
-    ax.grid(axis="y", color="white", linewidth=1, alpha=1.0)
-    ax.set_facecolor("#f5f5f5")
+    # 他の図と同じ薄いグリッド・枠なし凡例にする。
+    ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
+    ax.set_axisbelow(True)
     ax.tick_params(axis="x", which="minor", bottom=False)
     ax.tick_params(axis="y", which="minor", left=False)
-    ax.tick_params(axis="both", labelsize=12)
-    ax.legend(frameon=True, framealpha=0.95, edgecolor="#808080", loc="upper right")
+    ax.legend(frameon=False, loc="upper right")
     fig.tight_layout()
 
     output_stem.parent.mkdir(parents=True, exist_ok=True)

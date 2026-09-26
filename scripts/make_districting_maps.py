@@ -87,7 +87,10 @@ def main() -> None:
                         default=Path("data/processed/target_municipalities_boundary.geojson"))
     parser.add_argument("--results-csv", type=Path,
                         default=Path("data/processed/optimization_results_exact_objective.csv"))
-    parser.add_argument("--representative", nargs="+", default=["25:3", "40:1", "35:3"])
+    parser.add_argument("--representative", nargs="+", default=["25:3", "30:2", "40:1"],
+                        help="本文用の代表ケース（D:M）。2026-08-14に 35:3 を 30:2 へ差し替えた。"
+                             "35:3 は地域規模 315/6/1 で、連続性を制約していないため面が分断して見え、"
+                             "本文の代表図としては読み取りにくかったことによる（計算は正しい）。")
     parser.add_argument("--bundle-limit", type=int, default=5)
     parser.add_argument("--fig-dir", type=Path, default=Path("figures"))
     parser.add_argument("--atlas-dir", type=Path, default=Path("figures/atlas"))
@@ -118,8 +121,13 @@ def main() -> None:
         if ok is False:
             all_ok = False
         polys = bridge_based_voronoi(coords, clusters, union)
-        title = f"$D={int(d)}$ km, $M={m}$" if legend else \
-            f"D={int(d)}, M={m}\n$f$={obj:.3f}  ({'/'.join(map(str, counts))})"
+        # 本文用の図はTeX側にキャプションがあるので図中タイトルを付けない。
+        # atlas は36枚を並べるため、どのケースかを示す小さな見出しを残す。
+        # 見出しに出す値は地域ごとの f(N_k,L) ではなくその総和、すなわち
+        # 目的関数値 Z = sum_k f(N_k, L) なので、本文の記法に合わせて Z と書く。
+        title = None if legend else (
+            f"D={int(d)}, M={m}\n$Z$={obj:.3f}  ({'/'.join(map(str, counts))})"
+        )
         return plot_voronoi_map(polys, coords, clusters, boundary_gdf=gdf, bounds=bounds,
                                 title=title, ax=ax, show_legend=legend)
 
@@ -148,17 +156,30 @@ def main() -> None:
             ax = axes[i, j]
             if (d, m) in solutions:
                 render_case(d, m, ax=ax, legend=False)
-                ax.set_title(ax.get_title(), fontsize=7)
+                ax.set_title(ax.get_title(), fontsize=10)
             else:
                 ax.axis("off")
-    fig.suptitle("Districting atlas (all D, M cases; $L=5$)", fontsize=12)
-    fig.tight_layout(rect=(0, 0, 1, 0.99))
+    # 図上部のキャプションは付けない。説明は TeX 側のキャプションに書く
+    # （査読コメント 2026-09-25）。
+    fig.tight_layout()   # suptitle を外したので上の余白を空ける必要はない
     args.atlas_dir.mkdir(parents=True, exist_ok=True)
     atlas_stem = args.atlas_dir / "districting_atlas"
-    for ext, kw in [("png", {"dpi": 200}), ("svg", {}), ("pdf", {})]:
-        fig.savefig(atlas_stem.with_suffix(f".{ext}"), bbox_inches="tight", **kw)
+    fig.savefig(atlas_stem.with_suffix(".png"), bbox_inches="tight", dpi=200)
     plt.close(fig)
-    print(f"atlas: {atlas_stem}.*")
+
+    # atlas はPDFにすると8MB超、SVGは25MB超になるうえ、36枚の一覧を拡大して読む用途でもない。
+    # そこでラスタのまま扱う。ただしPNGを uplatex + dvipdfmx で読むには画像サイズを書いた
+    # .xbb が要り、その生成（extractbb）は Overleaf のようにシェル実行を禁じた環境では働かない。
+    # PNGをPDFに包めば、PDF自身がサイズ情報を持つのでどの環境でも読める（1MB弱に収まる）。
+    try:
+        from PIL import Image
+
+        with Image.open(atlas_stem.with_suffix(".png")) as image:
+            image.convert("RGB").save(atlas_stem.with_suffix(".pdf"), "PDF", resolution=200.0)
+        print(f"atlas: {atlas_stem}.png / .pdf（PNGをPDFに包んだもの）")
+    except ImportError:
+        print(f"atlas: {atlas_stem}.png のみ（Pillow が無くPDF版を作れない。"
+              f"本文で読むなら extractbb で .xbb を作ること）")
 
     meta = {
         "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),

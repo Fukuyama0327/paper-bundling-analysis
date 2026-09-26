@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-14T00:29:15",
-  "git_head": "8ca46f5",
+  "generated_at": "2026-09-26T19:30:00",
+  "git_head": "d7344c7",
   "solutions": "data/processed/districting_solutions_all36.pkl",
   "bundle_limit": 5,
   "verifications": [
@@ -16,23 +16,22 @@
       "verified": true
     },
     {
+      "D": 30.0,
+      "M": 2,
+      "counts": [
+        251,
+        71
+      ],
+      "objective": 1.6342453086504674,
+      "verified": true
+    },
+    {
       "D": 40.0,
       "M": 1,
       "counts": [
         322
       ],
       "objective": 1.1933267244554224,
-      "verified": true
-    },
-    {
-      "D": 35.0,
-      "M": 3,
-      "counts": [
-        315,
-        6,
-        1
-      ],
-      "objective": 1.2620414655590901,
       "verified": true
     },
     {
