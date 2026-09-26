@@ -191,8 +191,18 @@ def threshold_table(
     return pd.DataFrame(rows)
 
 
+#: 軸ラベル。(a)(b) を横に並べる狭いパネルでは、1行のままだと枠から食み出すので
+#: 折り返した版を使う。文言は水谷先生の指定どおりで、改行位置だけが違う。
+XLABEL = "Number of bridges in a management area, $N$"
+XLABEL_WRAPPED = "Number of bridges in a\nmanagement area, $N$"
+
+
+def x_label(compact: bool) -> str:
+    return XLABEL_WRAPPED if compact else XLABEL
+
+
 def draw_saturation(ax, n_values, saturation, bundle_limits, n_study, main_limit,
-                    thresholds, panel_label: str = "") -> None:
+                    thresholds, panel_label: str = "", compact: bool = False) -> None:
     """Draw eta(N,L): how much of the ceiling 1 - 1/L a district of size N attains."""
     max_n = n_values[-1]
     for level in thresholds:
@@ -210,7 +220,7 @@ def draw_saturation(ax, n_values, saturation, bundle_limits, n_study, main_limit
         ax.annotate(f"$N={n_study}$, $L={main_limit}$: {value:.1%}",
                     xy=(n_study, value), xytext=(10, -20), textcoords="offset points",
                     color="#1f2937")
-    ax.set_xlabel("Number of bridges in a management area, $N$")
+    ax.set_xlabel(x_label(compact))
     ax.set_ylabel(r"Share of theoretical upper bound attained, $\eta$")
     # 図中には見出しもパネル記号も置かない（説明はTeXのキャプションに書く）。
     # 本文のキャプションが言う (a)(b) は、並び順（左・右）で対応させる。
@@ -220,7 +230,7 @@ def draw_saturation(ax, n_values, saturation, bundle_limits, n_study, main_limit
     ax.legend(frameon=False, loc="lower right", ncol=2)
 
 
-def draw_probability(ax, n_values, prob, q, n_study, highlight_n) -> None:
+def draw_probability(ax, n_values, prob, q, n_study, highlight_n, compact: bool = False) -> None:
     """(a) 同一年に2件以上の補修需要が発生する確率。"""
     max_n = n_values[-1]
     ax.plot(n_values, prob, linewidth=2.0, color="#4c6fb1")
@@ -232,14 +242,19 @@ def draw_probability(ax, n_values, prob, q, n_study, highlight_n) -> None:
         ax.annotate(f"$N={n}$: {value:.3f}", xy=(n, value),
                     xytext=(6, -12 if n == n_study else 6), textcoords="offset points",
                     color="#1f2937")
-    ax.set_xlabel("Number of bridges in a management area, $N$")
-    ax.set_ylabel(r"Probability of two or more repair demands, $\Pr(X \geq 2)$")
+    ax.set_xlabel(x_label(compact))
+    # 1行だとラベルの長さが枠の高さを決めてしまい、パネルを正方形に近づけられない。
+    # 文言は変えず、狭いパネルのときだけ2行に折り返す。
+    ax.set_ylabel("Probability of two or more\n" r"repair demands, $\Pr(X \geq 2)$"
+                  if compact else
+                  r"Probability of two or more repair demands, $\Pr(X \geq 2)$")
     ax.set_xlim(0, max_n)
     ax.set_ylim(0, 1.02)
     ax.grid(color="#d1d5db", linewidth=0.7)
 
 
-def draw_reduction(ax, n_values, reduction, bundle_limits, n_study, main_limit) -> None:
+def draw_reduction(ax, n_values, reduction, bundle_limits, n_study, main_limit,
+                   compact: bool = False) -> None:
     """(b) 個別発注を基準とした期待契約件数の低減率。"""
     max_n = n_values[-1]
     for index, limit in enumerate(bundle_limits):
@@ -256,14 +271,15 @@ def draw_reduction(ax, n_values, reduction, bundle_limits, n_study, main_limit) 
                     xytext=(10, -26), textcoords="offset points", color="#1f2937")
     ax.plot([], [], color="#6b7280", linestyle=(0, (1.5, 1.5)), linewidth=1.2,
             label=r"$1 - 1/L$ (upper bound)")
-    ax.set_xlabel("Number of bridges in a management area, $N$")
+    ax.set_xlabel(x_label(compact))
     ax.set_ylabel(r"Reduction rate, $\rho$")
     ax.set_xlim(0, max_n)
     # (a) と同じ上限にする。片方だけ 1.0 で切ると、並べたとき (a) の上だけ
     # 余白があるように見える（査読コメント 2026-09-25）。
     ax.set_ylim(0, 1.02)
     ax.grid(color="#d1d5db", linewidth=0.7)
-    ax.legend(frameon=False, loc="lower right", ncol=2)
+    # 2列にすると凡例が軸の幅を超え、目盛ラベルの上へはみ出す（2026-09-27）。
+    ax.legend(frameon=False, loc="lower right", ncol=1, labelspacing=0.35)
 
 
 def plot(
@@ -285,10 +301,11 @@ def plot(
     else:
         # (a) の y 軸ラベル「Probability of two or more repair demands, ...」は長いので、
         # パネルを低くすると端が切れる。縦は余裕をもって取る。
-        fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=figure_size(1.0, aspect=0.56))
+        fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=figure_size(1.0, aspect=0.50))
         ax_c = None
-    draw_probability(ax_a, n_values, prob, q, n_study, highlight_n)
-    draw_reduction(ax_b, n_values, reduction, bundle_limits, n_study, main_limit)
+    draw_probability(ax_a, n_values, prob, q, n_study, highlight_n, compact=True)
+    draw_reduction(ax_b, n_values, reduction, bundle_limits, n_study, main_limit,
+                   compact=True)
 
     # --- Panel (c): share of the theoretical ceiling that is attained ---------
     if ax_c is not None:
@@ -417,15 +434,16 @@ def main() -> None:
     # パネル単体のファイル。本文のレイアウトを組みやすいよう、(a)(b) を1枚ずつでも出す。
     # 座標指定で切り出す必要がないので、図の寸法が変わっても本文は壊れない。
     for name, drawer in [
-        ("a", lambda ax: draw_probability(ax, n_values, prob, q, n_study, args.highlight_n)),
+        ("a", lambda ax: draw_probability(ax, n_values, prob, q, n_study, args.highlight_n,
+                                          compact=True)),
         ("b", lambda ax: draw_reduction(ax, n_values, reduction, args.bundle_limits,
-                                        n_study, main_limit)),
+                                        n_study, main_limit, compact=True)),
     ]:
         # 本文が (a)(b) を subfigure として横に並べる場合に等倍で収まる寸法。
         # 2枚組PDFを viewport で切り出す方式は、図の実寸を変えるたびに座標がずれる
         # （実際 2026-09-27 に (a)(b) の文字が切断された）。単独版を使えば起きない。
         fig, ax = plt.subplots(
-            figsize=figure_size(args.panel_width_fraction, aspect=1.15))
+            figsize=figure_size(args.panel_width_fraction, aspect=0.98))
         drawer(ax)
         fig.tight_layout()
         stem = args.output_stem.with_name(f"{args.output_stem.name}_{name}")

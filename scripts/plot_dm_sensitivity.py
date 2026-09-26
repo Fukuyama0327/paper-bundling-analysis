@@ -104,7 +104,7 @@ def main() -> None:
     ax.set_ylim(low - 0.06, baseline + 0.08)
     ax.grid(color="#d1d5db", linewidth=0.7)
     # 凡例は枠の外（下）へ出す。枠内に置くとどこかの曲線か基準線に必ず重なる。
-    ax.legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.13),
+    ax.legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.21),
               columnspacing=1.6, handlelength=2.0)
 
     fig.tight_layout()
