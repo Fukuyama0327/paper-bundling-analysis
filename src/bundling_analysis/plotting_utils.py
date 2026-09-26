@@ -56,7 +56,7 @@ TEXT_WIDTH_PT = 469.755
 TEXT_WIDTH_IN = TEXT_WIDTH_PT / 72.27
 
 #: 図中の文字の大きさ [pt]。図を実寸で作るので、この値がそのまま誌面での大きさになる。
-FIGURE_FONT_SIZE = 9.0
+FIGURE_FONT_SIZE = 10.5
 
 
 def figure_width(fraction: float = 1.0) -> float:

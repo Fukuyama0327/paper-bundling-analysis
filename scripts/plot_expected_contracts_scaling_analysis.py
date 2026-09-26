@@ -351,6 +351,16 @@ def main() -> None:
         help="Ceiling-attainment levels to report.",
     )
     parser.add_argument(
+        "--panel-width-fraction",
+        type=float,
+        default=0.49,
+        help=(
+            "(a)(b) の単独版を作るときの、本文幅に対する配置幅の割合。本文側が "
+            "subfigure を width=0.49\\linewidth で置くなら 0.48 を渡す。図をこの実寸で "
+            "作ることで、配置時の倍率が 1.0 になり文字の大きさが他の図と揃う。"
+        ),
+    )
+    parser.add_argument(
         "--saturation-stem",
         type=Path,
         default=Path("figures/expected_contracts_saturation"),
@@ -411,7 +421,11 @@ def main() -> None:
         ("b", lambda ax: draw_reduction(ax, n_values, reduction, args.bundle_limits,
                                         n_study, main_limit)),
     ]:
-        fig, ax = plt.subplots(figsize=figure_size(0.78, aspect=0.70))
+        # 本文が (a)(b) を subfigure として横に並べる場合に等倍で収まる寸法。
+        # 2枚組PDFを viewport で切り出す方式は、図の実寸を変えるたびに座標がずれる
+        # （実際 2026-09-27 に (a)(b) の文字が切断された）。単独版を使えば起きない。
+        fig, ax = plt.subplots(
+            figsize=figure_size(args.panel_width_fraction, aspect=1.15))
         drawer(ax)
         fig.tight_layout()
         stem = args.output_stem.with_name(f"{args.output_stem.name}_{name}")

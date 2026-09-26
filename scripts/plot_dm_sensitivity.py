@@ -99,38 +99,13 @@ def main() -> None:
     ax.set_ylabel("Expected annual number of contracts, $Z$")
     ax.set_xlim(min(df["MaxDistance"]) - 2, max(df["MaxDistance"]) + 2)
     # 0 から描くと、M 違いの差（D を固定すると 0.001〜0.01 程度しかない）が
-    # 潰れて1本の線に見える。データの範囲に合わせて縦を使い切る。
+    # 潰れてしまう。現行水準の基準線から最小値までを使い切る。
     low = float(df["ObjectiveValue_Exact"].min())
-    # 下側は凡例を置く帯を空けておく（曲線に重ねない）。
-    ax.set_ylim(low - 0.34, baseline + 0.12)
+    ax.set_ylim(low - 0.06, baseline + 0.08)
     ax.grid(color="#d1d5db", linewidth=0.7)
-    ax.legend(frameon=False, ncol=4, loc="lower center", columnspacing=1.4,
-              handlelength=2.0)
-
-    # D が大きい領域では曲線がほぼ重なる。実際、D を固定したときの M 違いの差は
-    # D=25〜35 では 0.004 程度しかなく、どんな倍率でも分離できない。一方、距離制約が
-    # 効かなくなる D>=40 では 1.193〜1.244 と 0.05 ほど開くので、そこだけ拡大して
-    # M の順序を読めるようにする（査読コメント「線が重複して見づらい」2026-09-25）。
-    zoom = df[df["MaxDistance"] >= 40]
-    axins = ax.inset_axes([0.40, 0.55, 0.36, 0.34], facecolor="white")
-    for m in sorted(zoom["M"].unique()):
-        sub = zoom[zoom["M"] == m].sort_values("MaxDistance")
-        axins.plot(sub["MaxDistance"], sub["ObjectiveValue_Exact"],
-                   marker=M_MARKERS.get(int(m), "o"),
-                   markersize=3.4 * M_MARKER_SIZE_SCALE.get(int(m), 1.0),
-                   markeredgecolor="white", markeredgewidth=0.4,
-                   linewidth=1.0, color=M_COLORS.get(int(m)))
-    axins.set_xlim(38.5, 51.5)
-    axins.set_ylim(float(zoom["ObjectiveValue_Exact"].min()) - 0.008,
-                   float(zoom["ObjectiveValue_Exact"].max()) + 0.008)
-    axins.set_xticks([40, 45, 50])
-    axins.grid(color="#e5e7eb", linewidth=0.6)
-    axins.set_axisbelow(True)
-    axins.tick_params(labelsize=6.5, pad=1.5)
-    axins.set_title(r"Detail: $D \geq 40$ km", fontsize=7, pad=2.5, color="#4b5563")
-    for spine in axins.spines.values():
-        spine.set_color("#9ca3af")
-        spine.set_linewidth(0.7)
+    # 凡例は枠の外（下）へ出す。枠内に置くとどこかの曲線か基準線に必ず重なる。
+    ax.legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.13),
+              columnspacing=1.6, handlelength=2.0)
 
     fig.tight_layout()
 

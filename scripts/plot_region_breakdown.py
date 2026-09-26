@@ -86,6 +86,7 @@ def main() -> None:
     x = range(len(cases))
 
     table_rows: list[dict] = []
+    totals: list[float] = []
     all_ok = True
     for xi, (d, m) in zip(x, cases):
         counts = region_counts(df, d, m)
@@ -105,6 +106,7 @@ def main() -> None:
             table_rows.append({"D": d, "M": m, "region_rank": r + 1, "N_m": n,
                                "f_Nm": f"{fval:.6f}"})
         total = sum(contribs)
+        totals.append(total)
         target = exact_objective(df, d, m)
         ok = abs(total - target) < 1e-9
         all_ok = all_ok and ok
@@ -116,7 +118,8 @@ def main() -> None:
     ax.set_xticklabels(labels)
     # 各段は地域ごとの f(N_m,L)、棒全体の高さは総和 Z。両方が載る軸なので記号は付けない
     ax.set_ylabel("Expected annual number of contracts")
-    ax.set_ylim(bottom=0)
+    # 棒の上に総和の数値を置くので、上端に余白を取らないとラベルが枠から出る。
+    ax.set_ylim(0, max(totals) * 1.13)
     ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
     ax.set_axisbelow(True)   # グリッド線が棒の上を横切らないようにする
     fig.tight_layout()
