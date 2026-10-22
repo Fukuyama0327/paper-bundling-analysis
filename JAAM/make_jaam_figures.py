@@ -1,7 +1,7 @@
-"""JAAM和文・2段組用の図10点と表データを元データから一括生成する。
+"""JAAM和文・2段組用の図10種類（図7は2枚）と表データを一括生成する。
 
 Usage: python JAAM/make_jaam_figures.py
-Outputs: JAAM/figures/*.png, *.pdf and JAAM/figures/optimization_table.csv
+Outputs: JAAM/figures/*.png, *.pdf, *.svg and optimization_table.csv
 図の幅は本文1段の7.6 cmで作る。Wordには幅7.6 cmで配置すること。
 """
 
@@ -62,8 +62,14 @@ def canvas(height: float = 2.2):
 
 def save(fig, name: str) -> None:
     fig.tight_layout(pad=0.35)
-    for ext, kw in (("png", {"dpi": 400}), ("pdf", {})):
-        fig.savefig(OUT / f"{name}.{ext}", **kw)
+    for ext, kw in (("png", {"dpi": 400}), ("pdf", {}), ("svg", {})):
+        path = OUT / f"{name}.{ext}"
+        fig.savefig(path, **kw)
+        if ext == "svg":
+            # Matplotlibのpath属性の改行末尾に残る空白を取り除く。
+            svg = path.read_text(encoding="utf-8")
+            path.write_text("\n".join(line.rstrip() for line in svg.splitlines()) + "\n",
+                            encoding="utf-8")
     plt.close(fig)
     print(name)
 
