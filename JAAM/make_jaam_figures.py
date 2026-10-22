@@ -67,6 +67,9 @@ def save(fig, name: str) -> None:
     if name == "expected_contracts_by_bundle_limit":
         # 回転した数式の縦軸名はtight_layoutだけでは幅を確保できない。
         fig.subplots_adjust(left=0.27)
+    elif name == "expected_contracts_saturation":
+        # 到達率の目印を右枠外に置く余白を確保する。
+        fig.subplots_adjust(right=0.82)
     for ext, kw in (("png", {"dpi": 400}), ("pdf", {}), ("svg", {})):
         path = OUT / f"{name}.{ext}"
         fig.savefig(path, **kw)
@@ -177,8 +180,8 @@ def scaling(scaling_data: pd.DataFrame) -> None:
     fig, ax = canvas(2.25)
     for level in [0.50, 0.75, 0.80, 0.90, 0.95]:
         ax.axhline(level, color="#d1d5db", linewidth=0.8)
-        ax.annotate(f"{level:.0%}", (1000, level), xytext=(-2, 3),
-                    textcoords="offset points", ha="right", fontsize=6.5, color=GRAY)
+        ax.text(1.025, level, f"{level:.0%}", transform=ax.get_yaxis_transform(),
+                ha="left", va="center", fontsize=6, color=GRAY, clip_on=False)
     for lim in [3, 5, 7, 10]:
         ax.plot(n, d[f"saturation_rate_L{lim}"], color=L_COLORS[lim],
                 linewidth=2, label=f"L={lim}")
