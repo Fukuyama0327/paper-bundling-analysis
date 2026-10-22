@@ -46,10 +46,12 @@ def setup() -> None:
     if not family:
         raise RuntimeError("日本語フォントが見つかりません。CJKフォントを導入してください。")
     plt.rcParams.update({
-        "font.family": family, "font.size": 9.5, "axes.labelsize": 9.5,
-        "xtick.labelsize": 9.0, "ytick.labelsize": 9.0,
-        "legend.fontsize": 8.5, "axes.unicode_minus": False,
-        "pdf.fonttype": 42, "svg.fonttype": "none",
+        "font.family": family, "font.size": 7.5, "axes.labelsize": 7.5,
+        "xtick.labelsize": 7.0, "ytick.labelsize": 7.0,
+        "legend.fontsize": 6.5, "axes.unicode_minus": False,
+        # WordのSVG取込で日本語フォントの置換・改行が起きないよう、
+        # SVG内の文字は輪郭に変換する。PNG/PDFも同じサイズで出力する。
+        "pdf.fonttype": 42, "svg.fonttype": "path",
     })
     OUT.mkdir(exist_ok=True)
     print(f"日本語フォント: {family}")
@@ -62,6 +64,9 @@ def canvas(height: float = 2.2):
 
 def save(fig, name: str) -> None:
     fig.tight_layout(pad=0.35)
+    if name == "expected_contracts_by_bundle_limit":
+        # 回転した数式の縦軸名はtight_layoutだけでは幅を確保できない。
+        fig.subplots_adjust(left=0.27)
     for ext, kw in (("png", {"dpi": 400}), ("pdf", {}), ("svg", {})):
         path = OUT / f"{name}.{ext}"
         fig.savefig(path, **kw)
@@ -129,7 +134,7 @@ def inspection() -> None:
     ax.set_ylim(bottom=0)
     ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
     ax.set_axisbelow(True)
-    ax.legend(frameon=False, loc="upper right", fontsize=8)
+    ax.legend(frameon=False, loc="upper right", fontsize=6.5)
     save(fig, "inspection_interval")
 
 
@@ -144,7 +149,7 @@ def scaling(scaling_data: pd.DataFrame) -> None:
         ax.plot(count, value, "o", color="#1f2937", markersize=4.5)
         offset = (6, -12 if count == 322 else 6)
         ax.annotate(f"N={count}: {value:.3f}", (count, value), xytext=offset,
-                    textcoords="offset points", fontsize=8, color="#1f2937")
+                    textcoords="offset points", fontsize=6.5, color="#1f2937")
     ax.set(xlabel="管理エリア内の橋梁数 N（橋）", ylabel=r"複数補修需要の発生確率 $\Pr(X\geq 2)$",
            xlim=(0, 1000), ylim=(0, 1.02))
     ax.grid(color="#d1d5db", linewidth=0.7)
@@ -160,20 +165,20 @@ def scaling(scaling_data: pd.DataFrame) -> None:
     value = float(d.loc[d.N == 322, "reduction_rate_L5"].iloc[0])
     ax.plot(322, value, "o", color="#1f2937", markersize=5)
     ax.annotate(f"N=322, L=5: {value:.3f}", (322, value), xytext=(8, -20),
-                textcoords="offset points", fontsize=8)
+                textcoords="offset points", fontsize=6.5)
     ax.plot([], [], color=GRAY, linestyle=(0, (1.5, 1.5)), linewidth=1.2,
             label="1−1/L（理論上限）")
     ax.set(xlabel="管理エリア内の橋梁数 N（橋）", ylabel="期待契約件数の低減率 ρ",
            xlim=(0, 1000), ylim=(0, 1.02))
     ax.grid(color="#d1d5db", linewidth=0.7)
-    ax.legend(frameon=False, loc="lower right", fontsize=7.5, labelspacing=0.3)
+    ax.legend(frameon=False, loc="lower right", fontsize=6.5, labelspacing=0.3)
     save(fig, "expected_contracts_scaling_analysis_b")
 
     fig, ax = canvas(2.25)
     for level in [0.50, 0.75, 0.80, 0.90, 0.95]:
         ax.axhline(level, color="#d1d5db", linewidth=0.8)
         ax.annotate(f"{level:.0%}", (1000, level), xytext=(-2, 3),
-                    textcoords="offset points", ha="right", fontsize=7.5, color=GRAY)
+                    textcoords="offset points", ha="right", fontsize=6.5, color=GRAY)
     for lim in [3, 5, 7, 10]:
         ax.plot(n, d[f"saturation_rate_L{lim}"], color=L_COLORS[lim],
                 linewidth=2, label=f"L={lim}")
@@ -181,11 +186,11 @@ def scaling(scaling_data: pd.DataFrame) -> None:
     value = float(d.loc[d.N == 322, "saturation_rate_L5"].iloc[0])
     ax.plot(322, value, "o", color="#1f2937", markersize=5)
     ax.annotate(f"N=322, L=5: {value:.1%}", (322, value), xytext=(8, -18),
-                textcoords="offset points", fontsize=8)
+                textcoords="offset points", fontsize=6.5)
     ax.set(xlabel="管理エリア内の橋梁数 N（橋）", ylabel="理論上限への到達率 η",
            xlim=(0, 1000), ylim=(0, 1.02))
     ax.grid(axis="x", color="#d1d5db", linewidth=0.7)
-    ax.legend(frameon=False, loc="lower right", ncol=2, fontsize=8)
+    ax.legend(frameon=False, loc="lower right", ncol=2, fontsize=6.5)
     save(fig, "expected_contracts_saturation")
 
     fig, ax = canvas(2.25)
@@ -194,9 +199,9 @@ def scaling(scaling_data: pd.DataFrame) -> None:
     for lim, style in [(3, "--"), (5, "-"), (7, "-."), (10, ":")]:
         ax.plot(n, d[f"expected_contracts_L{lim}"], color=L_COLORS[lim],
                 linestyle=style, linewidth=1.6, label=f"L={lim}")
-    ax.set(xlabel="管理エリア内の橋梁数 N（橋）", ylabel="年間期待契約件数 f(N,L)（件）",
+    ax.set(xlabel="管理エリア内の橋梁数 N（橋）", ylabel="f(N,L)（件／年）",
            xlim=(0, 342), ylim=(0, 4.2))
-    ax.legend(frameon=False, loc="upper left", fontsize=8)
+    ax.legend(frameon=False, loc="upper left", fontsize=6.5)
     save(fig, "expected_contracts_by_bundle_limit")
 
 
@@ -230,7 +235,7 @@ def sensitivity(results: pd.DataFrame, baseline: float) -> None:
     ax.set_xticks([40, 45, 50])
     ax.grid(color="#d1d5db", linewidth=0.7)
     ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.18),
-              columnspacing=0.7, handlelength=1.5, fontsize=8)
+              columnspacing=0.7, handlelength=1.5, fontsize=6.5)
     save(fig, "dm_sensitivity_b")
 
 
@@ -247,10 +252,10 @@ def breakdown() -> None:
                    edgecolor="white", linewidth=0.6, zorder=2)
             if r.f_Nm > 0.04:
                 ax.text(j, bottom + r.f_Nm / 2, rf"$N_{{{i+1}}}={r.N_m}$", ha="center",
-                        va="center", fontsize=8, color="white")
+                        va="center", fontsize=6.5, color="white")
             bottom += r.f_Nm
         totals.append(bottom)
-        ax.text(j, bottom + 0.02, f"{bottom:.3f}", ha="center", va="bottom", fontsize=8.5)
+        ax.text(j, bottom + 0.02, f"{bottom:.3f}", ha="center", va="bottom", fontsize=7)
     ax.set_xticks(range(3), [x[2] for x in cases])
     ax.set(ylabel="年間期待契約件数（件）", ylim=(0, max(totals) * 1.13))
     ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
